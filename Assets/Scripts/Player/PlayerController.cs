@@ -69,7 +69,7 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void Start()
     {
-        HideMouse();
+        //HideMouse();
         SetUpCharacterController();
         SetUpRigidbody();
     }
