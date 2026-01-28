@@ -5,7 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - Enemy
-  - Surface
+  - Building
+  - Ground
   layers:
   - Default
   - TransparentFX
@@ -15,8 +16,8 @@ TagManager:
   - UI
   - Player
   - Enemy
-  - Surface
-  - 
+  - Ground
+  - Building
   - 
   - 
   - 
