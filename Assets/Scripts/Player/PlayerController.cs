@@ -60,13 +60,6 @@ public class PlayerController : MonoBehaviour
         lookInput.Disable();
     }
 
-    /// <summary>
-    /// Standard Unity function called once before the first Update call
-    /// Input:
-    /// none
-    /// Return:
-    /// void (no return)
-    /// </summary>
     void Start()
     {
         HideMouse();

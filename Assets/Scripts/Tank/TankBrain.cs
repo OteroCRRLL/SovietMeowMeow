@@ -33,6 +33,8 @@ public class TankBrain : MonoBehaviour
         {
             agent.SetDestination(waypoints[currentWaypointIndex].position); //Start patrolling routes
         }
+
+        
     }
 
     // Update is called once per frame
