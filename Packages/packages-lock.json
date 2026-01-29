@@ -1,12 +1,5 @@
 {
   "dependencies": {
-    "com.inspiaaa.unityhfsm": {
-      "version": "https://github.com/Inspiaaa/UnityHFSM.git",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "b35a8ab302a4d837429818dc29a4ddb522efac7f"
-    },
     "com.unity.ai.navigation": {
       "version": "1.1.7",
       "depth": 0,
@@ -158,7 +151,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.textmeshpro": {
-      "version": "3.0.7",
+      "version": "3.0.9",
       "depth": 0,
       "source": "registry",
       "dependencies": {

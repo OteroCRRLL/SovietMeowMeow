@@ -5,8 +5,11 @@ public class ReplayManager : MonoBehaviour
 {
     public List<string> recordableTags = new List<string>();
 
+
     private List<ReplayObject> allReplayObjects = new List<ReplayObject>();
     private bool isRecordingGlobal = false; //Controls manager state
+
+
 
     void Update()
     {
