@@ -9,6 +9,8 @@ public class ReplayManager : MonoBehaviour
     private List<ReplayObject> allReplayObjects = new List<ReplayObject>();
     private bool isRecordingGlobal = false; //Controls manager state
 
+    private float recordingStartTime;
+
 
 
     void Update()
@@ -22,6 +24,10 @@ public class ReplayManager : MonoBehaviour
     {
         Debug.Log("---- Recording Started ----");
         isRecordingGlobal = true;
+
+        //Save actual time for reference
+        recordingStartTime = Time.time;
+
         foreach (var obj in allReplayObjects)
         {
             if (obj != null) obj.StartRecording();
@@ -32,13 +38,13 @@ public class ReplayManager : MonoBehaviour
     {
         Debug.Log("---- Replay Reproducing ----");
         isRecordingGlobal = false;
+
         foreach (var obj in allReplayObjects)
         {
             if (obj != null) obj.StartReplay();
         }
     }
 
-    //In-game spawned objects (bullets)
     public void RegisterObject(ReplayObject newObj)
     {
         if (recordableTags.Contains(newObj.tag))
@@ -49,10 +55,18 @@ public class ReplayManager : MonoBehaviour
 
                 if (isRecordingGlobal)
                 {
-                    newObj.StartRecording();
+                    float timeOffset = Time.time - recordingStartTime;
+
+                    Debug.Log($"Object  {newObj.name} registered with offset: {timeOffset}");
+                    newObj.StartRecording(timeOffset);
                 }
 
             }
+        }
+
+        else
+        {
+            Debug.LogWarning($"The object {newObj.name} with tag {newObj.tag} is not in the list");
         }
 
     }
