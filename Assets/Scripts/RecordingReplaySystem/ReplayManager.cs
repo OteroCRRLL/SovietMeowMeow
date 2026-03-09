@@ -3,29 +3,30 @@ using System.Collections.Generic;
 
 public class ReplayManager : MonoBehaviour
 {
+    public static ReplayManager instance;
     public List<string> recordableTags = new List<string>();
 
-
     private List<ReplayObject> allReplayObjects = new List<ReplayObject>();
-    private bool isRecordingGlobal = false; //Controls manager state
-
+    public bool IsRecordingGlobal = false; // Público para que CameraScoring lo lea
     private float recordingStartTime;
 
-
+    private void Awake()
+    {
+        if (instance == null) instance = this;
+        else Destroy(gameObject);
+    }
 
     void Update()
     {
-        //Testing
         if (Input.GetKeyDown(KeyCode.R)) StartRecording();
+        if (Input.GetKeyDown(KeyCode.T)) StopRecording(); // Detener grabación
         if (Input.GetKeyDown(KeyCode.P)) StartPlayback();
     }
 
     public void StartRecording()
     {
         Debug.Log("---- Recording Started ----");
-        isRecordingGlobal = true;
-
-        //Save actual time for reference
+        IsRecordingGlobal = true;
         recordingStartTime = Time.time;
 
         foreach (var obj in allReplayObjects)
@@ -34,10 +35,16 @@ public class ReplayManager : MonoBehaviour
         }
     }
 
+    public void StopRecording()
+    {
+        Debug.Log("---- Recording Stopped ----");
+        IsRecordingGlobal = false;
+    }
+
     public void StartPlayback()
     {
         Debug.Log("---- Replay Reproducing ----");
-        isRecordingGlobal = false;
+        IsRecordingGlobal = false;
 
         foreach (var obj in allReplayObjects)
         {
@@ -53,21 +60,12 @@ public class ReplayManager : MonoBehaviour
             {
                 allReplayObjects.Add(newObj);
 
-                if (isRecordingGlobal)
+                if (IsRecordingGlobal)
                 {
                     float timeOffset = Time.time - recordingStartTime;
-
-                    Debug.Log($"Object  {newObj.name} registered with offset: {timeOffset}");
                     newObj.StartRecording(timeOffset);
                 }
-
             }
         }
-
-        else
-        {
-            Debug.LogWarning($"The object {newObj.name} with tag {newObj.tag} is not in the list");
-        }
-
     }
 }

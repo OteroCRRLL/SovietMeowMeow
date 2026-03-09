@@ -151,6 +151,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   explosionRadius: 3
   lifeTime: 10
+  explosionDamage: 100
   collisionTags:
   - Player
   - Ground

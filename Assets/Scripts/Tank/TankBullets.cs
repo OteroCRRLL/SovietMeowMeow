@@ -8,6 +8,9 @@ public class TankBullets : MonoBehaviour
     [Header("Explostion Settings")]
     public float explosionRadius = 3f;
     public float lifeTime = 1000f;
+
+    public float explosionDamage = 50f; 
+
     //public GameObject explosionEffect;
 
     [Header("Filter")]
@@ -33,7 +36,6 @@ public class TankBullets : MonoBehaviour
 
     private void Explode()
     {
-
         //Detect all colliders in area
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, explosionRadius);
 
@@ -42,13 +44,15 @@ public class TankBullets : MonoBehaviour
             //Verify if object is desired tag
             if (targetTags.Contains(hit.tag))
             {
-                Debug.Log("Eliminated object by explosion:" + hit.name);
-
-                Destroy(hit.gameObject);
+                // Si el objeto tiene sistema de vida, le hace daño
+                if (hit.TryGetComponent<HealthSystem>(out HealthSystem health))
+                {
+                    health.TakeDamage(explosionDamage);
+                    Debug.Log("Daño por explosión a: " + hit.name);
+                }
             }
         }
-
-        Destroy(gameObject);
+        Destroy(gameObject); // Destruye la bala
     }
 
 }
