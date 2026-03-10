@@ -16,5 +16,5 @@ public struct ReplayFrame
     //Record animator state
     public bool isAnimEnabled;
 
-    //
+    
 }

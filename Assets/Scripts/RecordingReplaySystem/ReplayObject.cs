@@ -15,7 +15,7 @@ public class ReplayObject : MonoBehaviour
     public Rigidbody rb;
     public NavMeshAgent agent;
 
-    public Transform[] extraTransforms; // Children with independent behaviours
+    public Transform[] extraTransforms;
 
     [Header("Animations to record")]
     public string[] boolParams;
@@ -26,9 +26,8 @@ public class ReplayObject : MonoBehaviour
     private float timeTimer = 0;
     private int playbackIndex = 0;
 
-    // NUEVAS VARIABLES PARA EL TIMING
-    private float spawnOffset = 0f;       // Cuánto tardó en aparecer este objeto
-    private float replayGlobalTimer = 0f; // Temporizador global de la replay actual
+    private float spawnOffset = 0f; 
+    private float replayGlobalTimer = 0f;
     private bool isWaitingToSpawn = false;
 
     private void Update()
@@ -45,28 +44,28 @@ public class ReplayObject : MonoBehaviour
         }
         else if (isReplaying)
         {
-            // NUEVO: Lógica de espera por offset
+          
             replayGlobalTimer += Time.deltaTime;
 
-            // Si aún no ha pasado el tiempo de offset, mantenemos el objeto oculto y salimos
+        
             if (replayGlobalTimer < spawnOffset)
             {
                 if (!isWaitingToSpawn)
                 {
-                    ToggleVisuals(false); // Ocultar
+                    ToggleVisuals(false);
                     isWaitingToSpawn = true;
                 }
-                return; // No ejecutamos interpolación todavía
+                return; 
             }
 
-            // Si ya pasó el tiempo, lo mostramos
+           
             if (isWaitingToSpawn)
             {
-                ToggleVisuals(true); // Mostrar
+                ToggleVisuals(true); 
                 isWaitingToSpawn = false;
             }
 
-            // --- Lógica normal de reproducción ---
+           
             timeTimer += Time.deltaTime;
             if (timeTimer >= recordInterval)
             {
@@ -150,28 +149,26 @@ public class ReplayObject : MonoBehaviour
         }
     }
 
-    // NUEVO: Helper para ocultar visualmente el objeto sin desactivar el script
-    // (Si desactivamos el GameObject entero, el Update deja de correr y no puede contar el tiempo)
+  
     void ToggleVisuals(bool state)
     {
-        // Renderers (Meshes, SkinnedMeshes)
+        // Renderers
         Renderer[] renderers = GetComponentsInChildren<Renderer>();
         foreach (var r in renderers) r.enabled = state;
 
-        // UI Canvases (barras de vida, etc)
+        // UI Canvas
         Canvas[] canvases = GetComponentsInChildren<Canvas>();
         foreach (var c in canvases) c.enabled = state;
 
-        // Animador (para evitar glitches visuales)
+        // Animador 
         if (anim != null) anim.enabled = state;
     }
 
     // Controls
-    // MODIFICADO: Ahora acepta el offset
     public void StartRecording(float offset = 0f)
     {
         frames.Clear();
-        spawnOffset = offset; // Guardamos el offset
+        spawnOffset = offset; 
         isRecording = true;
         isReplaying = false;
         timeTimer = 0;
@@ -184,7 +181,6 @@ public class ReplayObject : MonoBehaviour
         playbackIndex = 0;
         timeTimer = 0;
 
-        // Reiniciamos contadores de offset
         replayGlobalTimer = 0;
         isWaitingToSpawn = false;
 
@@ -202,7 +198,7 @@ public class ReplayObject : MonoBehaviour
             }
         }
 
-        // Si tiene offset, ocultamos visualmente al inicio
+  
         if (spawnOffset > 0)
         {
             ToggleVisuals(false);
@@ -215,7 +211,7 @@ public class ReplayObject : MonoBehaviour
         isReplaying = false;
         isWaitingToSpawn = false;
 
-        // Aseguramos que se vea al terminar
+  
         ToggleVisuals(true);
 
         if (rb) rb.isKinematic = false;

@@ -29,7 +29,6 @@ public class CameraScoring : MonoBehaviour
 
     private void ScanForContent()
     {
-        // Dibuja una línea verde en la ventana Scene para visualizar el rayo
         Debug.DrawRay(transform.position, transform.forward * rayDistance, Color.green);
 
         RaycastHit hit;
@@ -48,7 +47,6 @@ public class CameraScoring : MonoBehaviour
 
     public void ShowFinalScore()
     {
-        // Ahora el resultado final sale limpio por la consola
         Debug.Log($"--- EXTRACCIÓN COMPLETADA --- \n VISITAS DEL VÍDEO TOTALES: {currentScore}");
     }
 

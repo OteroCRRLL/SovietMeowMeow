@@ -5,7 +5,7 @@ public class ExtractionPoint : MonoBehaviour, IInteractable
 {
     [Header("UI")]
     public TextMeshProUGUI uiText;
-    [TextArea] public string promptMessage = "[E] - Extraer al Búnker";
+    [TextArea] public string promptMessage = "[F] - Extract";
 
     public string InteractionPrompt => promptMessage; //
 

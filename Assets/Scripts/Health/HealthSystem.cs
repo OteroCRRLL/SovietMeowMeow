@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.Events; // Esto es la magia para que sea modular
+using UnityEngine.Events;
 
 public class HealthSystem : MonoBehaviour
 {
@@ -7,7 +7,6 @@ public class HealthSystem : MonoBehaviour
     private float currentHealth;
 
     [Header("Eventos al Morir")]
-    [Tooltip("Añade aquí lo que pasará al morir (Ej: GameLoopManager -> ExtractPlayer)")]
     public UnityEvent onDeath;
 
     void Start()
@@ -29,6 +28,6 @@ public class HealthSystem : MonoBehaviour
     private void Die()
     {
         Debug.Log(gameObject.name + " ha muerto.");
-        onDeath.Invoke(); // Ejecuta todo lo que le pongas en el Inspector
+        onDeath.Invoke();
     }
 }

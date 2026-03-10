@@ -4,7 +4,6 @@ using TMPro;
 public class MissionDoor : MonoBehaviour, IInteractable
 {
     [Header("Mission Settings")]
-    [Tooltip("Activa esto si la puerta lleva a la Warzone. Desactívalo si lleva a la Base.")]
     public bool isDeploying = true;
 
     [Header("UI")]

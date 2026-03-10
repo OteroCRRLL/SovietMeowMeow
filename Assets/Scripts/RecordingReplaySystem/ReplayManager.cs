@@ -7,7 +7,7 @@ public class ReplayManager : MonoBehaviour
     public List<string> recordableTags = new List<string>();
 
     private List<ReplayObject> allReplayObjects = new List<ReplayObject>();
-    public bool IsRecordingGlobal = false; // Público para que CameraScoring lo lea
+    public bool IsRecordingGlobal = false;
     private float recordingStartTime;
 
     private void Awake()

@@ -2501,7 +2501,7 @@ GameObject:
   - component: {fileID: 325242808}
   - component: {fileID: 325242807}
   m_Layer: 12
-  m_Name: Cube
+  m_Name: ExtractionPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7193,7 +7193,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isDeploying: 1
   uiText: {fileID: 619169246}
-  promptMessage: '[E] - Usar Puerta'
+  promptMessage: '[F] - Use Door'
 --- !u!1 &1365167633
 GameObject:
   m_ObjectHideFlags: 0
