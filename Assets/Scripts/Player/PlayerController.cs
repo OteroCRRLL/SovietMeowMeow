@@ -12,6 +12,8 @@ public class PlayerController : MonoBehaviour
     [Header("Settings")]
     [Tooltip("The speed at which the player moves")]
     public float moveSpeed = 20f;
+    [Tooltip("The speed at which the player runs")]
+    public float runSpeed = 22f;
     [Tooltip("The speed at which the player rotates to look left and right (calculated in degrees)")]
     public float lookSpeed = 60f;
     [Tooltip("The power with which the player jumps")]
@@ -25,11 +27,11 @@ public class PlayerController : MonoBehaviour
     [Header("Jump Timing")]
     public float jumpTimeLeniency = 0.25f;
 
-   
-
     [Header("Input Actions")]
     [Tooltip("The bindings for moving the player")]
     public InputAction moveInput;
+    [Tooltip("The binding to make the player run")]
+    public InputAction runInput;
     [Tooltip("The binding to make the player jump")]
     public InputAction jumpInput;
     [Tooltip("The binding for making the player look left and right")]
@@ -45,6 +47,7 @@ public class PlayerController : MonoBehaviour
     private void OnEnable()
     {
         moveInput.Enable();
+        runInput.Enable();
         jumpInput.Enable();
         lookInput.Enable();
     }
@@ -56,6 +59,7 @@ public class PlayerController : MonoBehaviour
     private void OnDisable()
     {
         moveInput.Disable();
+        runInput.Disable();
         jumpInput.Disable();
         lookInput.Disable();
     }
@@ -113,6 +117,9 @@ public class PlayerController : MonoBehaviour
         float forwardBackwardInput = moveInput.ReadValue<Vector2>().y;
         bool jumpPressed = jumpInput.triggered;
 
+        
+        float currentSpeed = runInput.IsPressed() ? runSpeed : moveSpeed;
+
         // Handle the control of the player while it is on the ground
         if (controller.isGrounded && moveDirection.y <= 0) // could also use RayCastGrounded instea of isGrounded
         {
@@ -123,7 +130,7 @@ public class PlayerController : MonoBehaviour
             moveDirection = new Vector3(leftRightInput, 0, forwardBackwardInput);
             // Set the move direction in relation to the transform
             moveDirection = transform.TransformDirection(moveDirection);
-            moveDirection = moveDirection * moveSpeed;
+            moveDirection = moveDirection * currentSpeed;
 
             if (jumpPressed)
             {
@@ -133,14 +140,14 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            moveDirection = new Vector3(leftRightInput * moveSpeed, moveDirection.y, forwardBackwardInput * moveSpeed);
+            moveDirection = new Vector3(leftRightInput * currentSpeed, moveDirection.y, forwardBackwardInput * currentSpeed);
             moveDirection = transform.TransformDirection(moveDirection);
 
             if (jumpPressed && Time.time < timeToStopBeingLenient)
             {
                 moveDirection.y = jumpPower;
             }
-          
+
         }
 
         if (controller.isGrounded && moveDirection.y < 0)

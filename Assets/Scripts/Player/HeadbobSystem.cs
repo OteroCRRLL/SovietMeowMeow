@@ -14,21 +14,28 @@ public class HeadbobSystem : MonoBehaviour
     [Range(10f, 100f)]
     public float Smooth = 10.0f;
 
+    [Header("Run Settings")]
+    public float runFrequencyMultiplier = 1.5f;
+    public float runAmountMultiplier = 1.5f;
+
     public InputAction moveInput;
+    public InputAction runInput;
 
     Vector3 StartPos;
 
     private void OnEnable()
     {
         moveInput.Enable();
+        runInput.Enable();
     }
 
     private void OnDisable()
     {
         moveInput.Disable();
+        runInput.Disable();
     }
 
-    
+
     // Start is called before the first frame update
     void Start()
     {
@@ -54,8 +61,13 @@ public class HeadbobSystem : MonoBehaviour
     private Vector3 StartHeadBob()
     {
         Vector3 pos = Vector3.zero;
-        pos.y += Mathf.Lerp(pos.y, Mathf.Sin(Time.time * Frequency) * Amount * 1.4f, Smooth * Time.deltaTime);
-        pos.x += Mathf.Lerp(pos.x, Mathf.Cos(Time.time * Frequency / 2f) * Amount * 1.6f, Smooth * Time.deltaTime);
+
+        // Calcula la frecuencia y cantidad en base a si el jugador corre
+        float currentFreq = runInput.IsPressed() ? Frequency * runFrequencyMultiplier : Frequency;
+        float currentAmount = runInput.IsPressed() ? Amount * runAmountMultiplier : Amount;
+
+        pos.y += Mathf.Lerp(pos.y, Mathf.Sin(Time.time * currentFreq) * currentAmount * 1.4f, Smooth * Time.deltaTime);
+        pos.x += Mathf.Lerp(pos.x, Mathf.Cos(Time.time * currentFreq / 2f) * currentAmount * 1.6f, Smooth * Time.deltaTime);
         transform.localPosition += pos;
 
         return pos;
