@@ -11,9 +11,10 @@ GameObject:
   - component: {fileID: 3998157111750649878}
   - component: {fileID: 2939890742776565595}
   - component: {fileID: 4356385178900527997}
-  m_Layer: 0
+  - component: {fileID: 7757151659342451108}
+  m_Layer: 7
   m_Name: TankAgent
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -76,9 +77,30 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  lockTime: 2
+  lockTime: 3
   targetLossGraceTime: 0.5
   shootDuration: 0.5
+--- !u!114 &7757151659342451108
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1188765585109061863}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f1035832bd60b24cbfd805d48502a00, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  recordInterval: 0.05
+  recordableTags: []
+  anim: {fileID: 3332292006229466282}
+  rb: {fileID: 0}
+  agent: {fileID: 2939890742776565595}
+  extraTransforms:
+  - {fileID: 8050293110470912604}
+  boolParams:
+  - isPatrolling
 --- !u!1 &1912920246314145819
 GameObject:
   m_ObjectHideFlags: 0
@@ -277,9 +299,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3511839380265885870}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: CabinPivot
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -436,6 +458,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &5038050358510569755
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7490931383775867468}
+  m_Layer: 7
+  m_Name: VisionPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7490931383775867468
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5038050358510569755}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.6087605, z: -0, w: 0.79335415}
+  m_LocalPosition: {x: 2.0170016, y: 0.09600002, z: 0.00000064013267}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8050293110470912604}
+  m_LocalEulerAnglesHint: {x: 0, y: 75, z: 0}
 --- !u!1 &8505384523785547714
 GameObject:
   m_ObjectHideFlags: 0
@@ -452,7 +505,7 @@ GameObject:
   - component: {fileID: 4194132717119016183}
   m_Layer: 7
   m_Name: Cabin
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -471,6 +524,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 606997307688359835}
+  - {fileID: 7490931383775867468}
   m_Father: {fileID: 5467773059786611506}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &4378440445821573510
@@ -578,14 +632,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DetectRange: 50
-  visionPoint: {fileID: 606997307688359835}
+  visionPoint: {fileID: 7490931383775867468}
   detectableLayers:
     serializedVersion: 2
-    m_Bits: 576
-  numberOfRays: 20
+    m_Bits: 704
   angleDifference: 10
   targetTags:
   - Player
+  - Enemy
+  scanFrequency: 5
 --- !u!1 &8763149640857545876
 GameObject:
   m_ObjectHideFlags: 0
@@ -712,5 +767,5 @@ MonoBehaviour:
     type: 3}
   anim: {fileID: 3332292006229466282}
   rotationSpeed: 5
-  bulletForce: 30
+  bulletForce: 3000
   spreadAngle: 3

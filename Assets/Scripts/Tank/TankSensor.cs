@@ -10,52 +10,67 @@ public class TankSensor : MonoBehaviour
     public LayerMask detectableLayers;
 
     [Header("Raycasts Configuration (Cone)")]
-    public int numberOfRays = 5;
     [Tooltip("Apertura total del cono en grados.")]
     public float angleDifference = 30f;
 
     [Header("Tag filter")]
     public List<string> targetTags = new List<string>();
 
+    [Header("Optimization")]
+    [Tooltip("Veces por segundo que el sensor escanea el área (reduce el lag drásticamente).")]
+    public float scanFrequency = 5f;
+
+    private float nextScanTime = 0f;
+    
+    // Usamos un array pre-asignado para OverlapSphereNonAlloc (cero Garbage Collection)
+    private Collider[] collidersBuffer = new Collider[20]; 
+
     public Transform GetDetectedEnemy()
     {
         if (visionPoint == null) return null;
 
-        float halfAngle = angleDifference / 2f;
-        int steps = Mathf.Max(2, numberOfRays);
-        float spaceBetweenRays = angleDifference / (steps - 1);
-
-        for (int i = 0; i < steps; i++)
+        // Limitar la frecuencia de escaneo para ahorrar muchísimo rendimiento
+        if (Time.time < nextScanTime)
         {
-            float verticalAngle = -halfAngle + (spaceBetweenRays * i);
-            for (int j = 0; j < steps; j++)
+            return null; // Aún no toca escanear
+        }
+
+        nextScanTime = Time.time + (1f / scanFrequency);
+
+        // 1. Detección espacial rápida (Esfera invisible, sin coste de raycasts múltiples)
+        int numColliders = Physics.OverlapSphereNonAlloc(visionPoint.position, DetectRange, collidersBuffer, detectableLayers);
+
+        for (int i = 0; i < numColliders; i++)
+        {
+            Collider col = collidersBuffer[i];
+            
+            // Filtrar rápidamente por las etiquetas válidas
+            if (!targetTags.Contains(col.tag)) continue;
+
+            // Apuntar al centro del collider en lugar de a los pies (transform.position)
+            Vector3 targetPosition = col.bounds.center;
+            Vector3 directionToTarget = (targetPosition - visionPoint.position).normalized;
+
+            // 2. Comprobar matemáticamente si está dentro del cono de visión del tanque
+            float angleToTarget = Vector3.Angle(visionPoint.forward, directionToTarget);
+            
+            if (angleToTarget <= angleDifference / 2f)
             {
-                float horizontalAngle = -halfAngle + (spaceBetweenRays * j);
-                Quaternion rayRotation = Quaternion.Euler(verticalAngle, horizontalAngle, 0);
-                Vector3 rayDirection = visionPoint.rotation * rayRotation * Vector3.forward;
-
-                RaycastHit hit;
-                if (Physics.Raycast(visionPoint.position, rayDirection, out hit, DetectRange, detectableLayers))
+                // 3. Lanzar 1 ÚNICO Raycast hacia el objetivo para ver si hay paredes bloqueando
+                float distanceToTarget = Vector3.Distance(visionPoint.position, targetPosition);
+                
+                if (Physics.Raycast(visionPoint.position, directionToTarget, out RaycastHit hit, distanceToTarget, detectableLayers))
                 {
-                    // Debug para saber con qué objeto exacto y qué etiqueta está chocando el rayo
-                    Debug.Log($"Rayo del sensor chocó con: {hit.collider.gameObject.name} (Tag: {hit.collider.tag})");
-
-                    if (targetTags.Contains(hit.collider.tag))
+                    // Comprobamos si el rayo dio en el objetivo (o en su etiqueta) y no en un muro
+                    if (hit.collider == col || targetTags.Contains(hit.collider.tag))
                     {
-                        Debug.DrawRay(visionPoint.position, rayDirection * hit.distance, Color.green);
-                        return hit.transform;
+                        Debug.DrawRay(visionPoint.position, directionToTarget * distanceToTarget, Color.green, 1f / scanFrequency);
+                        return col.transform; // ¡Enemigo detectado!
                     }
-                    else
-                    {
-                        Debug.DrawLine(visionPoint.position, hit.point, Color.yellow);
-                    }
-                }
-                else
-                {
-                    Debug.DrawRay(visionPoint.position, rayDirection * DetectRange, Color.red);
                 }
             }
         }
+
         return null;
     }
 
@@ -63,20 +78,35 @@ public class TankSensor : MonoBehaviour
     {
         if (target == null || visionPoint == null) return false;
 
-        Vector3 directionToTarget = (target.position - visionPoint.position).normalized;
-        float distanceToTarget = Vector3.Distance(visionPoint.position, target.position);
+        Collider targetCollider = target.GetComponentInChildren<Collider>();
+        Vector3 targetPosition = targetCollider != null ? targetCollider.bounds.center : target.position + Vector3.up * 0.5f;
 
+        float distanceToTarget = Vector3.Distance(visionPoint.position, targetPosition);
+        
+        // Si se ha alejado demasiado, ya no lo vemos
         if (distanceToTarget > DetectRange) return false;
 
-        RaycastHit hit;
-        // Lanzamos un raycast directo al objetivo
-        if (Physics.Raycast(visionPoint.position, directionToTarget, out hit, DetectRange, detectableLayers))
+        Vector3 directionToTarget = (targetPosition - visionPoint.position).normalized;
+
+        // Lanzamos un raycast directo al objetivo para mantener el "lock"
+        if (Physics.Raycast(visionPoint.position, directionToTarget, out RaycastHit hit, DetectRange, detectableLayers))
         {
             if (hit.transform == target || targetTags.Contains(hit.collider.tag))
             {
                 return true;
             }
         }
+        
         return false;
+    }
+
+    // Método extra para ver el rango de visión en el editor fácilmente
+    private void OnDrawGizmosSelected()
+    {
+        if (visionPoint != null)
+        {
+            Gizmos.color = new Color(1f, 1f, 0f, 0.2f); // Esfera amarilla semi-transparente
+            Gizmos.DrawWireSphere(visionPoint.position, DetectRange);
+        }
     }
 }
