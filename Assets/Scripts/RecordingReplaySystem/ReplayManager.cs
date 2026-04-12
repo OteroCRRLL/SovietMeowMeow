@@ -10,6 +10,9 @@ public class ReplayManager : MonoBehaviour
     public bool IsRecordingGlobal = false;
     private float recordingStartTime;
 
+    public float maxCapacity = 100;
+    public float currentCapacity = 100;
+
     private void Awake()
     {
         if (instance == null) instance = this;
@@ -21,6 +24,17 @@ public class ReplayManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R)) StartRecording();
         if (Input.GetKeyDown(KeyCode.T)) StopRecording(); // Detener grabación
         if (Input.GetKeyDown(KeyCode.P)) StartPlayback();
+
+        if (this.IsRecordingGlobal && currentCapacity > 0)
+        {
+            currentCapacity -= Time.deltaTime;
+            if (currentCapacity < 0)
+            {
+                currentCapacity = 0;
+                this.StopRecording();
+            }
+        }
+        Debug.Log(currentCapacity);
     }
 
     public void StartRecording()
