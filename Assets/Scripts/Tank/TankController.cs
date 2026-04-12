@@ -13,6 +13,8 @@ public class TankController : MonoBehaviour
     [Header("Settings")]
     public float rotationSpeed = 5f;
     public float bulletForce = 1500f; 
+    [Tooltip("Grados máximos de desviación aleatoria al disparar (Spread).")]
+    public float spreadAngle = 3f;
 
     public void RotateTowards(Transform target)
     {
@@ -69,7 +71,15 @@ public class TankController : MonoBehaviour
                 direction = shootPoint.forward;
             }
 
-            rb.AddForce(direction * bulletForce);
+            // --- Añadir dispersión (Spread) ---
+            float randomX = Random.Range(-spreadAngle, spreadAngle);
+            float randomY = Random.Range(-spreadAngle, spreadAngle);
+            float randomZ = Random.Range(-spreadAngle, spreadAngle);
+
+            Quaternion spreadRotation = Quaternion.Euler(randomX, randomY, randomZ);
+            Vector3 finalDirection = spreadRotation * direction;
+
+            rb.AddForce(finalDirection * bulletForce);
         }
 
         Debug.Log("Tank fired");

@@ -4317,9 +4317,9 @@ GameObject:
   - component: {fileID: 719614331}
   - component: {fileID: 719614330}
   - component: {fileID: 719614329}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Ground
-  m_TagString: Untagged
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -7542,6 +7542,8 @@ MonoBehaviour:
   - Bullet
   - Enemy
   IsRecordingGlobal: 0
+  maxCapacity: 100
+  currentCapacity: 100
 --- !u!4 &1378150530
 Transform:
   m_ObjectHideFlags: 0
@@ -10524,7 +10526,12 @@ PrefabInstance:
     - target: {fileID: 4842376481863453697, guid: 3bd73aca6fb6e814a90a515b85b222e7,
         type: 3}
       propertyPath: m_TagString
-      value: Enemy
+      value: Untagged
+      objectReference: {fileID: 0}
+    - target: {fileID: 6095322757090174121, guid: 3bd73aca6fb6e814a90a515b85b222e7,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 8505384523785547714, guid: 3bd73aca6fb6e814a90a515b85b222e7,
         type: 3}
@@ -10543,6 +10550,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1007581687}
+    - targetCorrespondingSourceObject: {fileID: 1912920246314145819, guid: 3bd73aca6fb6e814a90a515b85b222e7,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 3bd73aca6fb6e814a90a515b85b222e7, type: 3}
 --- !u!1001 &8404362244134615210
 PrefabInstance:

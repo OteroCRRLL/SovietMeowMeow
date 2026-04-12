@@ -16,13 +16,16 @@ public class TankBrain : MonoBehaviour
     [Header("Configuration")]
     public float lockTime = 2.0f;
     public float targetLossGraceTime = 1f; //Time to wait before continue patrolling
+    public float shootDuration = 0.5f; // Tiempo que el tanque se queda en estado 'Shoot' tras disparar
 
 
     private TankState currentState = TankState.Patrol;
+    public TankState CurrentState => currentState;
     private int currentWaypointIndex = 0;
     private float lockTimer = 0f;
     private Transform currentTarget;
     private float lostTargetTimer = 0f;
+    private float shootTimer = 0f;
 
     // Start is called before the first frame update
     void Start()
@@ -89,40 +92,47 @@ public class TankBrain : MonoBehaviour
     {
         controller.RotateTowards(currentTarget);
 
-        Transform detected = sensor.GetDetectedEnemy();
+        // En lugar de usar el cono de visión, verificamos si el objetivo sigue visible directamente
+        bool stillVisible = sensor.IsTargetVisible(currentTarget);
 
         //Still in sight verification
-        if (detected != null)
+        if (stillVisible)
         {
             lostTargetTimer = 0f;
-            currentTarget = detected;
             lockTimer += Time.deltaTime;
 
             if (lockTimer >= lockTime)
             {
+                shootTimer = 0f; // Reiniciamos el temporizador de disparo
                 currentState = TankState.Shoot;
             }
         }
-
         else
         {
             lostTargetTimer += Time.deltaTime;
             if (lostTargetTimer >= targetLossGraceTime)
             {
                 ResumePatrol(); // Lost target, reset
-               
             }
-            
         }
     }
 
     private void UpdateShoot()
     {
-        controller.Fire(currentTarget);
+        // Disparamos solo en el primer instante del estado Shoot
+        if (shootTimer == 0f)
+        {
+            controller.Fire(currentTarget);
+        }
 
-        lockTimer = 0f;
-        currentState = TankState.Lock;
+        // Nos quedamos en este estado durante 'shootDuration' segundos
+        shootTimer += Time.deltaTime;
         
+        if (shootTimer >= shootDuration)
+        {
+            lockTimer = 0f; // Reiniciamos el tiempo de lock para el próximo disparo
+            currentState = TankState.Lock; // Volvemos a fijar al objetivo
+        }
     }
     private void ResumePatrol()
     {
