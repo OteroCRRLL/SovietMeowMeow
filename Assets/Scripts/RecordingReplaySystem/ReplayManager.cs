@@ -15,27 +15,36 @@ public class ReplayManager : MonoBehaviour
 
     private void Awake()
     {
-        if (instance == null) instance = this;
-        else Destroy(gameObject);
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.R)) StartRecording();
-        if (Input.GetKeyDown(KeyCode.T)) StopRecording(); // Detener grabaci�n
+        if (Input.GetKeyDown(KeyCode.T)) StopRecording(); // Detener grabacin
         if (Input.GetKeyDown(KeyCode.P)) StartPlayback();
 
         if (this.IsRecordingGlobal && currentCapacity > 0)
         {
             currentCapacity -= Time.deltaTime;
-            if (currentCapacity < 0)
+            if (currentCapacity <= 0)
             {
                 currentCapacity = 0;
+                Debug.Log("Capacidad de grabación agotada. Deteniendo grabación automática.");
                 this.StopRecording();
             }
         }
-        Debug.Log(currentCapacity);
     }
+
+
 
     public void StartRecording()
     {

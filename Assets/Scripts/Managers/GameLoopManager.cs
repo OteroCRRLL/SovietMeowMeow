@@ -24,8 +24,17 @@ public class GameLoopManager : MonoBehaviour
 
     private void Awake()
     {
-        if (instance == null) instance = this;
-        else Destroy(gameObject);
+        if (instance == null)
+        {
+            instance = this;
+            // Se aÃ±ade DontDestroyOnLoad para hacerlo un Singleton persistente.
+            // Ojo: al cambiar de escena, deberÃ¡s reasignar las referencias (player, basePoint, etc.)
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     void Start()
@@ -70,10 +79,10 @@ public class GameLoopManager : MonoBehaviour
             enemy.enemyObj.SetActive(false);
         }
 
-        // Detener grabación automáticamente al extraer
+        // Detener grabaciï¿½n automï¿½ticamente al extraer
         if (ReplayManager.instance != null) ReplayManager.instance.StopRecording();
 
-        // Mostrar puntuación final
+        // Mostrar puntuaciï¿½n final
         if (CameraScoring.instance != null) CameraScoring.instance.ShowFinalScore();
     }
 

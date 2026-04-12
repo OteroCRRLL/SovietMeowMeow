@@ -207,25 +207,6 @@ public class PlayerController : MonoBehaviour
         return isFalling;
     }
 
-    /// <summary>
-    /// Checks if the player is on the ground using raycasting.
-    /// Return:
-    /// bool, whether or not the player is on the ground
-    /// </summary>
-    /// <returns></returns>
-    bool RayCastGrounded()
-    {
-        bool isGrounded = false;
-
-        Debug.DrawRay(transform.position, -transform.up * 1.1f, Color.red);
-        if (Physics.Raycast(transform.position, -transform.up, 1.1f))
-        {
-            isGrounded = true;
-        }
-
-        return isGrounded;
-    }
-
     void HideMouse()
     {
         Cursor.lockState = CursorLockMode.Locked;

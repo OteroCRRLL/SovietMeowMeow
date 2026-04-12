@@ -84,10 +84,4 @@ public class TankController : MonoBehaviour
 
         Debug.Log("Tank fired");
     }
-
-    private void Start()
-    {
-        
-    }
-
 }
