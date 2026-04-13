@@ -39,8 +39,7 @@ public class LevelManager : MonoBehaviour
     {
         if (GameManager.instance != null && SceneController.instance != null)
         {
-            // Opcional: Detener la grabación de replays o mostrar interfaz de resumen antes de cargar.
-            // Por ahora, se completa el día inmediatamente y se vuelve al Hub.
+           
             GameManager.instance.CompleteDay();
             
             Debug.Log("Extraction complete. Returning to Hub.");

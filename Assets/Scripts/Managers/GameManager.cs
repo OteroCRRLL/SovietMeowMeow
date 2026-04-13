@@ -44,15 +44,25 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // Si ya hay un jugador instanciado, lo destruimos o reutilizamos.
-        // En este caso, lo destruimos para instanciar uno nuevo limpio.
+        
         if (currentPlayerInstance != null)
         {
             Destroy(currentPlayerInstance);
         }
 
         currentPlayerInstance = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
-        // Aquí podrías inyectar datos adicionales al jugador (estadísticas, inventario, etc.)
+        
+        // Buscar el panel de pausa dentro del jugador instanciado
+        Transform[] allChildren = currentPlayerInstance.GetComponentsInChildren<Transform>(true);
+        foreach (Transform child in allChildren)
+        {
+            if (child.name == "PausePanel")
+            {
+                pauseMenuUI = child.gameObject;
+                pauseMenuUI.SetActive(false); // Nos aseguramos de que empiece oculto
+                break;
+            }
+        }
     }
 
     /// <summary>
@@ -70,8 +80,17 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void FailDay()
     {
-        Debug.Log("Day Failed!");
-        // Penalizaciones, etc.
+        Debug.Log("Day Failed! Resetting progress...");
+        ResetProgress();
+    }
+
+    /// <summary>
+    /// Reinicia el progreso al inicio del juego.
+    /// </summary>
+    public void ResetProgress()
+    {
+        currentDay = 1;
+        // Limpiar inventario u otros datos aquí si los hubiera
     }
 
     private void OnEnable()

@@ -24,14 +24,12 @@ public class TankBullets : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-
-        
-        if (collisionTags.Contains(collision.gameObject.tag))
+        // Explotar si colisiona con algo que está en la lista de collisionTags, o si colisiona directamente con el Player
+        if (collisionTags.Contains(collision.gameObject.tag) || collision.gameObject.CompareTag("Player"))
         {
             Explode();
-            Debug.Log("Bullet Collision");
+            Debug.Log("Bullet Collision with " + collision.gameObject.name);
         }
-        
     }
 
     private void Explode()
@@ -41,14 +39,20 @@ public class TankBullets : MonoBehaviour
 
         foreach (Collider hit in hitColliders)
         {
-            //Verify if object is desired tag
-            if (targetTags.Contains(hit.tag))
+            //Verify if object is desired tag, or if it's the Player
+            if (targetTags.Contains(hit.tag) || hit.CompareTag("Player"))
             {
-                // Si el objeto tiene sistema de vida, le hace da�o
-                if (hit.TryGetComponent<HealthSystem>(out HealthSystem health))
+                // Buscamos el sistema de vida tanto en el objeto como en sus padres (por si el collider está en un hijo)
+                HealthSystem health = hit.GetComponent<HealthSystem>();
+                if (health == null)
+                {
+                    health = hit.GetComponentInParent<HealthSystem>();
+                }
+
+                if (health != null)
                 {
                     health.TakeDamage(explosionDamage);
-                    Debug.Log("Da�o por explosi�n a: " + hit.name);
+                    Debug.Log("Daño por explosión a: " + hit.name);
                 }
             }
         }

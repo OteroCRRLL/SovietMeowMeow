@@ -28,7 +28,6 @@ public class GameLoopManager : MonoBehaviour
         {
             instance = this;
             // Se añade DontDestroyOnLoad para hacerlo un Singleton persistente.
-            // Ojo: al cambiar de escena, deberás reasignar las referencias (player, basePoint, etc.)
             DontDestroyOnLoad(gameObject);
         }
         else
@@ -79,10 +78,10 @@ public class GameLoopManager : MonoBehaviour
             enemy.enemyObj.SetActive(false);
         }
 
-        // Detener grabaci�n autom�ticamente al extraer
+        
         if (ReplayManager.instance != null) ReplayManager.instance.StopRecording();
 
-        // Mostrar puntuaci�n final
+        
         if (CameraScoring.instance != null) CameraScoring.instance.ShowFinalScore();
     }
 

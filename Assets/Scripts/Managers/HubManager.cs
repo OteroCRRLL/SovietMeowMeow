@@ -39,9 +39,7 @@ public class HubManager : MonoBehaviour
     {
         if (GameManager.instance != null && SceneController.instance != null)
         {
-            // Opcional: Podrías hacer que el nombre de la escena dependa del día actual
-            // Por ejemplo: string nextScene = "Day_" + GameManager.instance.currentDay;
-            // Por ahora, usaremos SampleScene como el único día.
+            
             string nextScene = "SampleScene"; 
             
             Debug.Log("Deploying to " + nextScene + "... Day: " + GameManager.instance.currentDay);
