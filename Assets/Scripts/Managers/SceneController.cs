@@ -51,27 +51,15 @@ public class SceneController : MonoBehaviour
         StartCoroutine(LoadSceneCoroutine(sceneIndex));
     }
 
+
     private IEnumerator LoadSceneCoroutine(string sceneName)
     {
-        // Aquí puedes invocar eventos de inicio de carga (ej: mostrar UI de carga)
-
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName);
-        
-        // Evita que la escena se active inmediatamente (opcional, útil si quieres hacer transiciones)
-        // asyncLoad.allowSceneActivation = false;
 
         while (!asyncLoad.isDone)
         {
-            // float progress = Mathf.Clamp01(asyncLoad.progress / 0.9f);
-            // Actualiza aquí tu barra de progreso usando 'progress'
-
-            // Si pusiste allowSceneActivation = false, deberás ponerlo a true cuando progress >= 1
-            // if (asyncLoad.progress >= 0.9f) asyncLoad.allowSceneActivation = true;
-
             yield return null;
         }
-
-        // Aquí puedes invocar eventos de fin de carga (ej: ocultar UI de carga)
     }
 
     private IEnumerator LoadSceneCoroutine(int sceneIndex)
