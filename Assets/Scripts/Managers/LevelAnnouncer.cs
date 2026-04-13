@@ -64,7 +64,7 @@ public class LevelAnnouncer : MonoBehaviour
         {
             locationName = "Home";
         }
-        else if (scene.name == "SampleScene" || scene.name.StartsWith("Day_"))
+        else if (scene.name == "Blockout" || scene.name.StartsWith("Day_"))
         {
             locationName = "Battlefield";
         }

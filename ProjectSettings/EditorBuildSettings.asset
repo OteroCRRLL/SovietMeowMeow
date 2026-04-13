@@ -14,6 +14,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/_Scenes/Blockout.unity
+    guid: 91b6e09ef81b572459224bd30989d7c4
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 7801c8acaef2b4f4a8a6079fef096532,
       type: 2}

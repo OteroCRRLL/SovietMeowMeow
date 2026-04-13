@@ -46,7 +46,7 @@ public class HubManager : MonoBehaviour
             }
             if (CameraScoring.instance != null) CameraScoring.instance.ResetScore();
             
-            string nextScene = "SampleScene"; 
+            string nextScene = "Blockout"; 
             
             Debug.Log("Deploying to " + nextScene + "... Day: " + GameManager.instance.currentDay);
             SceneController.instance.LoadScene(nextScene);
