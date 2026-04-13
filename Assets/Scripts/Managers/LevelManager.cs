@@ -39,6 +39,8 @@ public class LevelManager : MonoBehaviour
     {
         if (GameManager.instance != null && SceneController.instance != null)
         {
+            if (ReplayManager.instance != null) ReplayManager.instance.StopRecording();
+            if (CameraScoring.instance != null) CameraScoring.instance.ShowFinalScore();
            
             GameManager.instance.CompleteDay();
             

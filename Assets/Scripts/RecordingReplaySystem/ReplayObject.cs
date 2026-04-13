@@ -174,6 +174,21 @@ public class ReplayObject : MonoBehaviour
         timeTimer = 0;
     }
 
+    public void PauseRecording()
+    {
+        isRecording = false;
+    }
+
+    public void ResumeRecording()
+    {
+        isRecording = true;
+    }
+
+    public void StopRecording()
+    {
+        isRecording = false;
+    }
+
     public void StartReplay()
     {
         isRecording = false;
@@ -229,10 +244,9 @@ public class ReplayObject : MonoBehaviour
     }
     private void Start()
     {
-        ReplayManager manager = FindObjectOfType<ReplayManager>();
-        if (manager != null)
+        if (ReplayManager.instance != null)
         {
-            manager.RegisterObject(this);
+            ReplayManager.instance.RegisterObject(this);
         }
     }
 }

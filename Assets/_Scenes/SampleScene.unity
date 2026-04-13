@@ -6008,6 +6008,7 @@ MonoBehaviour:
   - Bullet
   - Enemy
   IsRecordingGlobal: 0
+  hasStartedRecording: 0
   maxCapacity: 100
   currentCapacity: 100
 --- !u!4 &1378150530

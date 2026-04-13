@@ -7,7 +7,7 @@ public class TankBullets : MonoBehaviour
 
     [Header("Explostion Settings")]
     public float explosionRadius = 3f;
-    public float lifeTime = 1000f;
+    public float lifeTime = 5f; // Changed from 1000f to avoid memory leaks
 
     public float explosionDamage = 50f; 
 

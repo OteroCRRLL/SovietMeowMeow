@@ -39,6 +39,12 @@ public class HubManager : MonoBehaviour
     {
         if (GameManager.instance != null && SceneController.instance != null)
         {
+            if (ReplayManager.instance != null)
+            {
+                ReplayManager.instance.StopRecording();
+                ReplayManager.instance.ResetCapacity();
+            }
+            if (CameraScoring.instance != null) CameraScoring.instance.ResetScore();
             
             string nextScene = "SampleScene"; 
             

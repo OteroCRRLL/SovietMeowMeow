@@ -5,6 +5,7 @@ public class HealthSystem : MonoBehaviour
 {
     public float maxHealth = 100f;
     private float currentHealth;
+    private bool isDead = false;
 
     [Header("Eventos al Recibir Daño")]
     public UnityEvent<float> onHealthChanged; // Pasamos el porcentaje de vida (0 a 1)
@@ -15,11 +16,14 @@ public class HealthSystem : MonoBehaviour
     void Start()
     {
         currentHealth = maxHealth;
+        isDead = false;
         onHealthChanged?.Invoke(currentHealth / maxHealth);
     }
 
     public void TakeDamage(float amount)
     {
+        if (isDead) return;
+        
         currentHealth -= amount;
         
         // Evitamos que la vida baje de 0
@@ -38,6 +42,9 @@ public class HealthSystem : MonoBehaviour
 
     private void Die()
     {
+        if (isDead) return;
+        isDead = true;
+        
         Debug.Log(gameObject.name + " ha muerto.");
         onDeath.Invoke();
         

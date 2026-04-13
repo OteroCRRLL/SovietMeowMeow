@@ -197,12 +197,12 @@ public class PlayerController : MonoBehaviour
     {
         bool isFalling = false;
 
-        if (previousHeight > transform.localPosition.y)
+        if (previousHeight > transform.position.y)
         {
             isFalling = true;
         }
 
-        previousHeight = transform.localPosition.y;
+        previousHeight = transform.position.y;
 
         return isFalling;
     }
