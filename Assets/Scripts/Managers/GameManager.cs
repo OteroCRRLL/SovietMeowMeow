@@ -13,6 +13,13 @@ public class GameManager : MonoBehaviour
 
     private bool isPaused = false;
 
+    [Header("Game State")]
+    public int currentDay = 1;
+
+    [Header("Player Instantiation")]
+    public GameObject playerPrefab;
+    private GameObject currentPlayerInstance;
+
     private void Awake()
     {
         if (instance == null)
@@ -26,19 +33,60 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Instancia al jugador en la posición proporcionada por el manager local (HubManager o LevelManager).
+    /// </summary>
+    public void SpawnPlayer(Transform spawnPoint)
+    {
+        if (playerPrefab == null)
+        {
+            Debug.LogError("Player Prefab is missing in GameManager!");
+            return;
+        }
+
+        // Si ya hay un jugador instanciado, lo destruimos o reutilizamos.
+        // En este caso, lo destruimos para instanciar uno nuevo limpio.
+        if (currentPlayerInstance != null)
+        {
+            Destroy(currentPlayerInstance);
+        }
+
+        currentPlayerInstance = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
+        // Aquí podrías inyectar datos adicionales al jugador (estadísticas, inventario, etc.)
+    }
+
+    /// <summary>
+    /// Llamado cuando el jugador extrae con éxito de un nivel.
+    /// </summary>
+    public void CompleteDay()
+    {
+        currentDay++;
+        Debug.Log("Day Completed! New Day: " + currentDay);
+        // Guardar progreso u otras lógicas
+    }
+
+    /// <summary>
+    /// Llamado cuando el jugador muere o falla el nivel.
+    /// </summary>
+    public void FailDay()
+    {
+        Debug.Log("Day Failed!");
+        // Penalizaciones, etc.
+    }
+
     private void OnEnable()
     {
-        pauseInput.Enable();
+        if (pauseInput != null) pauseInput.Enable();
     }
 
     private void OnDisable()
     {
-        pauseInput.Disable();
+        if (pauseInput != null) pauseInput.Disable();
     }
 
     void Update()
     {
-        if (pauseInput.triggered)
+        if (pauseInput != null && pauseInput.triggered)
         {
             if (isPaused)
             {

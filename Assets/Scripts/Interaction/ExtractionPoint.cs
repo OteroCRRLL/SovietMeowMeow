@@ -11,7 +11,14 @@ public class ExtractionPoint : MonoBehaviour, IInteractable
 
     public void Interact(GameObject player)
     {
-        GameLoopManager.instance.ExtractPlayer();
+        if (LevelManager.instance != null)
+        {
+            LevelManager.instance.ExtractPlayer();
+        }
+        else
+        {
+            Debug.LogWarning("Falta el LevelManager en la escena.");
+        }
     }
 
     public void OnHoverEnter()

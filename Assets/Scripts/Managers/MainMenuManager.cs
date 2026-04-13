@@ -8,8 +8,8 @@ using UnityEngine;
 public class MainMenuManager : MonoBehaviour
 {
     [Header("Configuración de Escenas")]
-    [Tooltip("El nombre exacto de la escena del juego que se va a cargar al pulsar Play.")]
-    public string gameSceneName = "GameScene";
+    [Tooltip("El nombre exacto de la escena del Hub (o primera escena) que se va a cargar al pulsar Play.")]
+    public string firstSceneName = "Hub";
 
     /// <summary>
     /// Función para el botón de Play del menú principal.
@@ -19,7 +19,7 @@ public class MainMenuManager : MonoBehaviour
     {
         if (SceneController.instance != null)
         {
-            SceneController.instance.LoadScene(gameSceneName);
+            SceneController.instance.LoadScene(firstSceneName);
         }
         else
         {

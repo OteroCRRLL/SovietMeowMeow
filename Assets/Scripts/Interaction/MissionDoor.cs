@@ -16,11 +16,25 @@ public class MissionDoor : MonoBehaviour, IInteractable
     {
         if (isDeploying)
         {
-            GameLoopManager.instance.DeployToWarzone();
+            if (HubManager.instance != null)
+            {
+                HubManager.instance.DeployToDay();
+            }
+            else
+            {
+                Debug.LogWarning("Falta el HubManager en la escena.");
+            }
         }
         else
         {
-            GameLoopManager.instance.ExtractPlayer();
+            if (LevelManager.instance != null)
+            {
+                LevelManager.instance.ExtractPlayer();
+            }
+            else
+            {
+                Debug.LogWarning("Falta el LevelManager en la escena.");
+            }
         }
     }
 
