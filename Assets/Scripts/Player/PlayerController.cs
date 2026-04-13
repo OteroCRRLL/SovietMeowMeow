@@ -37,6 +37,14 @@ public class PlayerController : MonoBehaviour
     [Tooltip("The binding for making the player look left and right")]
     public InputAction lookInput;
 
+    [Header("Stamina Settings")]
+    public float maxStamina = 100f;
+    public float currentStamina = 100f;
+    public float staminaDrain = 20f;
+    public float staminaRegen = 15f;
+    private bool isExhausted = false;
+    private bool shiftMustBeReleased = false;
+
     // The character controller component on the player
     private CharacterController controller;
 
@@ -116,9 +124,41 @@ public class PlayerController : MonoBehaviour
         float leftRightInput = moveInput.ReadValue<Vector2>().x;
         float forwardBackwardInput = moveInput.ReadValue<Vector2>().y;
         bool jumpPressed = jumpInput.triggered;
-
+        bool isMoving = leftRightInput != 0 || forwardBackwardInput != 0;
+        bool isShiftPressed = runInput.IsPressed();
         
         float currentSpeed = runInput.IsPressed() ? runSpeed : moveSpeed;
+
+        if(!isShiftPressed)
+        {
+            shiftMustBeReleased = false;
+        }
+        if (isShiftPressed && isMoving && currentStamina > 0 && !isExhausted && !shiftMustBeReleased)
+        {
+            currentSpeed = runSpeed;
+            currentStamina -= staminaDrain * Time.deltaTime;
+
+            if (currentStamina <= 0)
+            {
+                currentStamina = 0;
+                isExhausted = true;
+                shiftMustBeReleased = true;
+            }
+        }
+        else
+        {
+            currentSpeed = moveSpeed;
+            if (currentStamina < maxStamina)
+            {
+                currentStamina += staminaRegen * Time.deltaTime;
+
+                if (isExhausted && currentStamina > (maxStamina * 0.2f))
+                {
+                    isExhausted = false;
+                }
+            }
+        }
+        currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
 
         // Handle the control of the player while it is on the ground
         if (controller.isGrounded && moveDirection.y <= 0) // could also use RayCastGrounded instea of isGrounded
