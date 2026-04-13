@@ -14,6 +14,11 @@ public class ReplayManager : MonoBehaviour
     public float maxCapacity = 100;
     public float currentCapacity = 100;
 
+    [Header("UI")]
+    public GameObject recordingIndicatorUI;
+    public float blinkSpeed = 2f;
+    private CanvasGroup indicatorCanvasGroup;
+
     private void Awake()
     {
         if (instance == null)
@@ -24,6 +29,19 @@ public class ReplayManager : MonoBehaviour
         else
         {
             Destroy(gameObject);
+        }
+    }
+
+    private void Start()
+    {
+        if (recordingIndicatorUI != null) 
+        {
+            recordingIndicatorUI.SetActive(false);
+            indicatorCanvasGroup = recordingIndicatorUI.GetComponent<CanvasGroup>();
+            if (indicatorCanvasGroup == null)
+            {
+                indicatorCanvasGroup = recordingIndicatorUI.AddComponent<CanvasGroup>();
+            }
         }
     }
 
@@ -47,6 +65,12 @@ public class ReplayManager : MonoBehaviour
                 this.PauseRecording();
             }
         }
+
+        // Lógica de parpadeo (opacidad arriba y abajo)
+        if (IsRecordingGlobal && indicatorCanvasGroup != null)
+        {
+            indicatorCanvasGroup.alpha = Mathf.PingPong(Time.time * blinkSpeed, 1f);
+        }
     }
 
     public void ResumeRecording()
@@ -60,6 +84,8 @@ public class ReplayManager : MonoBehaviour
             hasStartedRecording = true;
             recordingStartTime = Time.time;
 
+            if (recordingIndicatorUI != null) recordingIndicatorUI.SetActive(true);
+
             foreach (var obj in allReplayObjects)
             {
                 if (obj != null) obj.StartRecording();
@@ -69,6 +95,9 @@ public class ReplayManager : MonoBehaviour
         {
             Debug.Log("---- Recording Resumed ----");
             IsRecordingGlobal = true;
+
+            if (recordingIndicatorUI != null) recordingIndicatorUI.SetActive(true);
+
             foreach (var obj in allReplayObjects)
             {
                 if (obj != null) obj.ResumeRecording();
@@ -81,6 +110,9 @@ public class ReplayManager : MonoBehaviour
         if (!IsRecordingGlobal) return;
         Debug.Log("---- Recording Paused ----");
         IsRecordingGlobal = false;
+
+        if (recordingIndicatorUI != null) recordingIndicatorUI.SetActive(false);
+
         foreach (var obj in allReplayObjects)
         {
             if (obj != null) obj.PauseRecording();
@@ -92,6 +124,9 @@ public class ReplayManager : MonoBehaviour
         Debug.Log("---- Recording Stopped ----");
         IsRecordingGlobal = false;
         hasStartedRecording = false;
+
+        if (recordingIndicatorUI != null) recordingIndicatorUI.SetActive(false);
+
         foreach (var obj in allReplayObjects)
         {
             if (obj != null) obj.StopRecording();
@@ -108,6 +143,8 @@ public class ReplayManager : MonoBehaviour
         Debug.Log("---- Replay Reproducing ----");
         IsRecordingGlobal = false;
         hasStartedRecording = false;
+
+        if (recordingIndicatorUI != null) recordingIndicatorUI.SetActive(false);
 
         foreach (var obj in allReplayObjects)
         {
