@@ -52,17 +52,7 @@ public class GameManager : MonoBehaviour
 
         currentPlayerInstance = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
         
-        // Buscar el panel de pausa dentro del jugador instanciado
-        Transform[] allChildren = currentPlayerInstance.GetComponentsInChildren<Transform>(true);
-        foreach (Transform child in allChildren)
-        {
-            if (child.name == "PausePanel")
-            {
-                pauseMenuUI = child.gameObject;
-                pauseMenuUI.SetActive(false); // Nos aseguramos de que empiece oculto
-                break;
-            }
-        }
+        SetupPauseMenu();
     }
 
     /// <summary>
@@ -96,11 +86,66 @@ public class GameManager : MonoBehaviour
     private void OnEnable()
     {
         if (pauseInput != null) pauseInput.Enable();
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private void OnDisable()
     {
-        if (pauseInput != null) pauseInput.Disable();
+        if (instance == this && pauseInput != null) pauseInput.Disable();
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        // Asegurarnos de que el input siga activo tras cambiar de escena
+        if (pauseInput != null) 
+        {
+            pauseInput.Disable();
+            pauseInput.Enable();
+        }
+        
+        // Si por alguna razón (testing) el jugador ya está en la escena y no pasó por SpawnPlayer
+        if (currentPlayerInstance == null)
+        {
+            PlayerController playerInScene = FindObjectOfType<PlayerController>();
+            if (playerInScene != null)
+            {
+                currentPlayerInstance = playerInScene.gameObject;
+                SetupPauseMenu();
+            }
+        }
+    }
+
+    private void SetupPauseMenu()
+    {
+        if (currentPlayerInstance == null) return;
+
+        Transform[] allChildren = currentPlayerInstance.GetComponentsInChildren<Transform>(true);
+        foreach (Transform child in allChildren)
+        {
+            if (child.name == "PausePanel")
+            {
+                pauseMenuUI = child.gameObject;
+                pauseMenuUI.SetActive(false); // Nos aseguramos de que empiece oculto
+                
+                // Conectar los botones dinámicamente
+                UnityEngine.UI.Button[] buttons = pauseMenuUI.GetComponentsInChildren<UnityEngine.UI.Button>(true);
+                foreach (UnityEngine.UI.Button btn in buttons)
+                {
+                    if (btn.gameObject.name == "ResumeGameButton")
+                    {
+                        btn.onClick.RemoveAllListeners();
+                        btn.onClick.AddListener(ResumeGame);
+                    }
+                    else if (btn.gameObject.name == "ExitGameButton" || btn.gameObject.name == "ExitButton" || btn.gameObject.name == "MainMenuButton")
+                    {
+                        btn.onClick.RemoveAllListeners();
+                        btn.onClick.AddListener(ReturnToMainMenu);
+                    }
+                }
+                break;
+            }
+        }
     }
 
     void Update()

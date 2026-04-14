@@ -1012,6 +1012,11 @@ PrefabInstance:
       propertyPath: m_FillMethod
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1954073783080155592, guid: e0b75ae78d0807841b1c0a14743032c0,
+        type: 3}
+      propertyPath: m_Name
+      value: ExitGameButton
+      objectReference: {fileID: 0}
     - target: {fileID: 2392631109027271690, guid: e0b75ae78d0807841b1c0a14743032c0,
         type: 3}
       propertyPath: m_Name
@@ -1026,6 +1031,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: PausePanel
+      objectReference: {fileID: 0}
+    - target: {fileID: 3944975951838965962, guid: e0b75ae78d0807841b1c0a14743032c0,
+        type: 3}
+      propertyPath: m_Name
+      value: ResumeGameButton
       objectReference: {fileID: 0}
     - target: {fileID: 3970978830286162914, guid: e0b75ae78d0807841b1c0a14743032c0,
         type: 3}
