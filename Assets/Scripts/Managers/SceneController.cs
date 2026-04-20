@@ -11,6 +11,7 @@ public class SceneController : MonoBehaviour
         if (instance == null)
         {
             instance = this;
+            transform.SetParent(null); // Asegurar que sea root para DontDestroyOnLoad
             DontDestroyOnLoad(gameObject); // Permite que el manager persista entre escenas
         }
         else

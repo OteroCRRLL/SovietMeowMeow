@@ -9,7 +9,9 @@ public class StorageBarController : MonoBehaviour
 
     void Update()
     {
-        filledBar.fillAmount = (ReplayManager.instance.currentCapacity / ReplayManager.instance.maxCapacity);
-
+        if (ReplayManager.instance != null && filledBar != null)
+        {
+            filledBar.fillAmount = (ReplayManager.instance.currentCapacity / ReplayManager.instance.maxCapacity);
+        }
     }
 }

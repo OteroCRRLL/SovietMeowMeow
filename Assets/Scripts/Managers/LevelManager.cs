@@ -42,7 +42,8 @@ public class LevelManager : MonoBehaviour
             if (ReplayManager.instance != null) ReplayManager.instance.StopRecording();
             if (CameraScoring.instance != null) CameraScoring.instance.ShowFinalScore();
            
-            GameManager.instance.CompleteDay();
+            // GameManager.instance.CompleteDay(); // Eliminado: Ahora el día se completa al dormir en la cama
+            GameManager.instance.hasDeployedToday = true; // El jugador ya hizo su misión de hoy
             
             Debug.Log("Extraction complete. Returning to Hub.");
             SceneController.instance.LoadScene("Hub"); // Cambiar al nombre exacto de la escena del Hub

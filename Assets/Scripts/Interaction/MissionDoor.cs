@@ -16,6 +16,12 @@ public class MissionDoor : MonoBehaviour, IInteractable
     {
         if (isDeploying)
         {
+            if (GameManager.instance != null && GameManager.instance.hasDeployedToday)
+            {
+                Debug.Log("Misión Bloqueada: Ya has ido de misión hoy. Debes ir a dormir a la cama.");
+                return;
+            }
+
             if (HubManager.instance != null)
             {
                 HubManager.instance.DeployToDay();
@@ -42,7 +48,14 @@ public class MissionDoor : MonoBehaviour, IInteractable
     {
         if (uiText != null)
         {
-            uiText.text = promptMessage;
+            if (isDeploying && GameManager.instance != null && GameManager.instance.hasDeployedToday)
+            {
+                uiText.text = "Ya has desplegado. Ve a dormir.";
+            }
+            else
+            {
+                uiText.text = promptMessage;
+            }
             uiText.gameObject.SetActive(true);
         }
     }

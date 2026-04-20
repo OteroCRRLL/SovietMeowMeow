@@ -56,6 +56,10 @@ public class HeadbobSystem : MonoBehaviour
         {
             StartHeadBob();
         }
+        else
+        {
+            StopHeadBob();
+        }
     }
 
     private Vector3 StartHeadBob()
@@ -66,9 +70,10 @@ public class HeadbobSystem : MonoBehaviour
         float currentFreq = runInput.IsPressed() ? Frequency * runFrequencyMultiplier : Frequency;
         float currentAmount = runInput.IsPressed() ? Amount * runAmountMultiplier : Amount;
 
-        pos.y += Mathf.Lerp(pos.y, Mathf.Sin(Time.time * currentFreq) * currentAmount * 1.4f, Smooth * Time.deltaTime);
-        pos.x += Mathf.Lerp(pos.x, Mathf.Cos(Time.time * currentFreq / 2f) * currentAmount * 1.6f, Smooth * Time.deltaTime);
-        transform.localPosition += pos;
+        pos.y += Mathf.Sin(Time.time * currentFreq) * currentAmount * 1.4f;
+        pos.x += Mathf.Cos(Time.time * currentFreq / 2f) * currentAmount * 1.6f;
+        
+        transform.localPosition = Vector3.Lerp(transform.localPosition, StartPos + pos, Smooth * Time.deltaTime);
 
         return pos;
     }
@@ -80,6 +85,6 @@ public class HeadbobSystem : MonoBehaviour
             return;
         }
 
-        transform.localPosition = Vector3.Lerp(transform.localPosition, StartPos, 1 * Time.deltaTime);
+        transform.localPosition = Vector3.Lerp(transform.localPosition, StartPos, Smooth * Time.deltaTime);
     }
 }

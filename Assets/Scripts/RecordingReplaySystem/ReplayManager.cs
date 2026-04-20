@@ -24,11 +24,52 @@ public class ReplayManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
+            transform.SetParent(null); // Asegurar que sea root para DontDestroyOnLoad
             DontDestroyOnLoad(gameObject);
+            
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
         }
         else
         {
+            // Apagamos nuestro UI referenciado para que no quede huérfano estático en pantalla
+            if (recordingIndicatorUI != null)
+            {
+                recordingIndicatorUI.SetActive(false);
+            }
             Destroy(gameObject);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this)
+        {
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+    }
+
+    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        StopRecording();
+    }
+
+    public void LinkIndicatorUI(GameObject newUI)
+    {
+        recordingIndicatorUI = newUI;
+        indicatorCanvasGroup = recordingIndicatorUI.GetComponent<CanvasGroup>();
+        if (indicatorCanvasGroup == null)
+        {
+            indicatorCanvasGroup = recordingIndicatorUI.AddComponent<CanvasGroup>();
+        }
+        
+        if (recordingIndicatorUI != null)
+        {
+            // Ocultar por defecto al instanciar (salvo que ya esté grabando)
+            recordingIndicatorUI.SetActive(IsRecordingGlobal);
+            if (!IsRecordingGlobal && indicatorCanvasGroup != null) 
+            {
+                indicatorCanvasGroup.alpha = 1f;
+            }
         }
     }
 
@@ -49,6 +90,14 @@ public class ReplayManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.R))
         {
+            // No permitir grabar en el Hub o Menú Principal
+            string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            if (currentScene == "Hub" || currentScene == "MainMenu")
+            {
+                Debug.Log("Grabación desactivada en el " + currentScene);
+                return;
+            }
+
             if (IsRecordingGlobal) PauseRecording();
             else ResumeRecording();
         }

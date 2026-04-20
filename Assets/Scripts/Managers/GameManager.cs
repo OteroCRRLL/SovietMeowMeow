@@ -15,6 +15,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Game State")]
     public int currentDay = 1;
+    public bool hasDeployedToday = false; // Registra si ya hemos hecho una misión este día
 
     [Header("Player Instantiation")]
     public GameObject playerPrefab;
@@ -25,6 +26,7 @@ public class GameManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
+            transform.SetParent(null); // Asegurar que sea root para DontDestroyOnLoad
             DontDestroyOnLoad(gameObject);
         }
         else
@@ -53,6 +55,16 @@ public class GameManager : MonoBehaviour
         currentPlayerInstance = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
         
         SetupPauseMenu();
+
+        // Enlazar el UI de grabación si existe en el jugador (incluso si está desactivado)
+        if (ReplayManager.instance != null)
+        {
+            RecordingIndicatorUI recUI = currentPlayerInstance.GetComponentInChildren<RecordingIndicatorUI>(true);
+            if (recUI != null)
+            {
+                ReplayManager.instance.LinkIndicatorUI(recUI.gameObject);
+            }
+        }
     }
 
     /// <summary>
@@ -61,6 +73,7 @@ public class GameManager : MonoBehaviour
     public void CompleteDay()
     {
         currentDay++;
+        hasDeployedToday = false;
         Debug.Log("Day Completed! New Day: " + currentDay);
         // Guardar progreso u otras lógicas
     }
@@ -80,6 +93,7 @@ public class GameManager : MonoBehaviour
     public void ResetProgress()
     {
         currentDay = 1;
+        hasDeployedToday = false;
         // Limpiar inventario u otros datos aquí si los hubiera
     }
 
@@ -112,6 +126,15 @@ public class GameManager : MonoBehaviour
             {
                 currentPlayerInstance = playerInScene.gameObject;
                 SetupPauseMenu();
+                
+                if (ReplayManager.instance != null)
+                {
+                    RecordingIndicatorUI recUI = currentPlayerInstance.GetComponentInChildren<RecordingIndicatorUI>(true);
+                    if (recUI != null)
+                    {
+                        ReplayManager.instance.LinkIndicatorUI(recUI.gameObject);
+                    }
+                }
             }
         }
     }
