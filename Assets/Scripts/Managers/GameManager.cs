@@ -97,6 +97,29 @@ public class GameManager : MonoBehaviour
         // Limpiar inventario u otros datos aquí si los hubiera
     }
 
+    /// <summary>
+    /// Guarda el estado actual en el archivo JSON.
+    /// </summary>
+    public void SaveGame()
+    {
+        SaveData data = new SaveData();
+        data.currentDay = this.currentDay;
+        data.hasDeployedToday = this.hasDeployedToday;
+        // Más adelante: data.totalViews = CameraScoring.instance.GetTotalViews()...
+        
+        SaveManager.SaveGame(data);
+    }
+
+    /// <summary>
+    /// Carga el estado desde el archivo JSON al GameManager.
+    /// </summary>
+    public void LoadGame()
+    {
+        SaveData data = SaveManager.LoadGame();
+        this.currentDay = data.currentDay;
+        this.hasDeployedToday = data.hasDeployedToday;
+    }
+
     private void OnEnable()
     {
         if (pauseInput != null) pauseInput.Enable();
@@ -164,6 +187,11 @@ public class GameManager : MonoBehaviour
                     {
                         btn.onClick.RemoveAllListeners();
                         btn.onClick.AddListener(ReturnToMainMenu);
+                    }
+                    else if (btn.gameObject.name == "SaveGameButton")
+                    {
+                        btn.onClick.RemoveAllListeners();
+                        btn.onClick.AddListener(SaveGame);
                     }
                 }
                 break;

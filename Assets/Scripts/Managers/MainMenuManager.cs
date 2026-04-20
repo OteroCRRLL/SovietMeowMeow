@@ -19,11 +19,39 @@ public class MainMenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Función para el botón de Play del menú principal.
-    /// Llama al Singleton del SceneController que siempre sobrevive.
+    /// Función para el botón de Nueva Partida.
+    /// Borra el guardado anterior y resetea el progreso.
     /// </summary>
-    public void PlayGame()
+    public void NewGame()
     {
+        SaveManager.DeleteSave();
+        
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.ResetProgress();
+        }
+        
+        if (SceneController.instance != null)
+        {
+            SceneController.instance.LoadScene(firstSceneName);
+        }
+        else
+        {
+            Debug.LogError("No se encontró el SceneController en la escena. Asegúrate de tener el prefab.");
+        }
+    }
+
+    /// <summary>
+    /// Función para el botón de Continuar Partida.
+    /// Lee el archivo JSON y carga los datos.
+    /// </summary>
+    public void ContinueGame()
+    {
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.LoadGame();
+        }
+        
         if (SceneController.instance != null)
         {
             SceneController.instance.LoadScene(firstSceneName);
