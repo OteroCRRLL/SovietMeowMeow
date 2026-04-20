@@ -5,13 +5,13 @@ using UnityEngine;
 public class TankSensor : MonoBehaviour
 {
     [Header("Detection settings")]
-    public float DetectRange = 10f;
+    public float DetectRange = 15f;
     public Transform visionPoint;
     public LayerMask detectableLayers;
 
     [Header("Raycasts Configuration (Cone)")]
     [Tooltip("Apertura total del cono en grados.")]
-    public float angleDifference = 30f;
+    public float angleDifference = 110f;
 
     [Header("Tag filter")]
     public List<string> targetTags = new List<string>();
@@ -51,15 +51,24 @@ public class TankSensor : MonoBehaviour
             Vector3 targetPosition = col.bounds.center;
             Vector3 directionToTarget = (targetPosition - visionPoint.position).normalized;
 
-            // 2. Comprobar matemáticamente si está dentro del cono de visión del tanque
-            float angleToTarget = Vector3.Angle(visionPoint.forward, directionToTarget);
+            // Aplanamos los vectores para que la diferencia de altura (jugador más bajito o muy cerca) no nos saque del cono de visión
+            Vector3 flatForward = visionPoint.forward;
+            flatForward.y = 0;
+            flatForward.Normalize();
+
+            Vector3 flatDirectionToTarget = directionToTarget;
+            flatDirectionToTarget.y = 0;
+            flatDirectionToTarget.Normalize();
+
+            // 2. Comprobar matemáticamente si está dentro del cono de visión del tanque (solo horizontal)
+            float angleToTarget = Vector3.Angle(flatForward, flatDirectionToTarget);
             
             if (angleToTarget <= angleDifference / 2f)
             {
                 // 3. Lanzar 1 ÚNICO Raycast hacia el objetivo para ver si hay paredes bloqueando
                 float distanceToTarget = Vector3.Distance(visionPoint.position, targetPosition);
                 
-                if (Physics.Raycast(visionPoint.position, directionToTarget, out RaycastHit hit, distanceToTarget, detectableLayers))
+                if (Physics.Raycast(visionPoint.position, directionToTarget, out RaycastHit hit, distanceToTarget, ~0, QueryTriggerInteraction.Ignore))
                 {
                     // Comprobamos si el rayo dio en el objetivo (o en su etiqueta) y no en un muro
                     if (hit.collider == col || targetTags.Contains(hit.collider.tag))
@@ -89,7 +98,7 @@ public class TankSensor : MonoBehaviour
         Vector3 directionToTarget = (targetPosition - visionPoint.position).normalized;
 
         // Lanzamos un raycast directo al objetivo para mantener el "lock"
-        if (Physics.Raycast(visionPoint.position, directionToTarget, out RaycastHit hit, DetectRange, detectableLayers))
+        if (Physics.Raycast(visionPoint.position, directionToTarget, out RaycastHit hit, DetectRange, ~0, QueryTriggerInteraction.Ignore))
         {
             if (hit.transform == target || targetTags.Contains(hit.collider.tag))
             {

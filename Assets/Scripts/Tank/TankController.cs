@@ -12,7 +12,7 @@ public class TankController : MonoBehaviour
 
     [Header("Settings")]
     public float rotationSpeed = 5f;
-    public float bulletForce = 1500f; 
+    public float bulletForce = 4500f; 
     [Tooltip("Grados máximos de desviación aleatoria al disparar (Spread).")]
     public float spreadAngle = 3f;
 
@@ -83,5 +83,24 @@ public class TankController : MonoBehaviour
         }
 
         Debug.Log("Tank fired");
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        // Si atropellamos al jugador, muere instantáneamente
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            HealthSystem health = collision.gameObject.GetComponent<HealthSystem>();
+            if (health == null)
+            {
+                health = collision.gameObject.GetComponentInParent<HealthSystem>();
+            }
+
+            if (health != null)
+            {
+                Debug.Log("¡El tanque ha atropellado al jugador! Muerte instantánea.");
+                health.TakeDamage(9999f); // Daño letal masivo
+            }
+        }
     }
 }

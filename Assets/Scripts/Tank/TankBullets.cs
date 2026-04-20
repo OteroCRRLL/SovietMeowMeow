@@ -24,12 +24,9 @@ public class TankBullets : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        // Explotar si colisiona con algo que está en la lista de collisionTags, o si colisiona directamente con el Player
-        if (collisionTags.Contains(collision.gameObject.tag) || collision.gameObject.CompareTag("Player"))
-        {
-            Explode();
-            Debug.Log("Bullet Collision with " + collision.gameObject.name);
-        }
+        // Explotar contra cualquier cosa (suelo, paredes, jugador, otros enemigos)
+        Explode();
+        Debug.Log("Bullet Collision with " + collision.gameObject.name);
     }
 
     private void Explode()
