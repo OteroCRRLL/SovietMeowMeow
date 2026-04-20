@@ -69,15 +69,21 @@ public class LevelAnnouncer : MonoBehaviour
             locationName = "Battlefield";
         }
 
-        // Obtiene el día actual del GameManager
+        // Obtiene el día y la economía del GameManager
         int currentDay = 1;
+        int maxDays = 3;
+        float currentMoney = 0f;
+        float requiredMoney = 10000f;
+        
         if (GameManager.instance != null)
         {
             currentDay = GameManager.instance.currentDay;
+            maxDays = GameManager.instance.maxDaysPerWeek;
+            currentMoney = GameManager.instance.currentMoney;
+            requiredMoney = GameManager.instance.requiredMoneyQuota;
         }
 
-        
-        string finalMessage = $"{locationName} - Day {currentDay}";
+        string finalMessage = $"{locationName} - Day {currentDay}/{maxDays}\n<size=70%>Quota: ${currentMoney} / ${requiredMoney}</size>";
 
       
         ShowAnnouncement(finalMessage);

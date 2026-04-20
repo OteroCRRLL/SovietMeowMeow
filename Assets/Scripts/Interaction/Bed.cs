@@ -19,20 +19,24 @@ public class Bed : MonoBehaviour, IInteractable
             }
             else
             {
-                GameManager.instance.CompleteDay();
-                Debug.Log("Has dormido. Es un nuevo día.");
+                bool survived = GameManager.instance.CompleteDay();
                 
-                // Guardado automático al ir a dormir
-                GameManager.instance.SaveGame();
-                
-                // Recargamos el Hub para que se instancie el mensaje del LevelAnnouncer "Home - Day X"
-                if (SceneController.instance != null)
+                if (survived)
                 {
-                    SceneController.instance.LoadScene("Hub");
-                }
-                else
-                {
-                    UnityEngine.SceneManagement.SceneManager.LoadScene("Hub");
+                    Debug.Log("Has dormido. Es un nuevo día.");
+                    
+                    // Guardado automático al ir a dormir
+                    GameManager.instance.SaveGame();
+                    
+                    // Recargamos el Hub para que se instancie el mensaje del LevelAnnouncer "Home - Day X"
+                    if (SceneController.instance != null)
+                    {
+                        SceneController.instance.LoadScene("Hub");
+                    }
+                    else
+                    {
+                        UnityEngine.SceneManagement.SceneManager.LoadScene("Hub");
+                    }
                 }
             }
         }

@@ -141,4 +141,9 @@ public class CameraScoring : MonoBehaviour
         UpdateUI();
         Debug.Log("Puntuacin reiniciada para un nuevo despliegue.");
     }
+
+    public int GetCurrentScore()
+    {
+        return currentScore;
+    }
 }

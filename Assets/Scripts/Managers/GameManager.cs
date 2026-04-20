@@ -16,6 +16,11 @@ public class GameManager : MonoBehaviour
     [Header("Game State")]
     public int currentDay = 1;
     public bool hasDeployedToday = false; // Registra si ya hemos hecho una misión este día
+    
+    [Header("Progreso y Economía")]
+    public int maxDaysPerWeek = 3;
+    public float currentMoney = 0f;
+    public float requiredMoneyQuota = 10000f;
 
     [Header("Player Instantiation")]
     public GameObject playerPrefab;
@@ -69,13 +74,44 @@ public class GameManager : MonoBehaviour
 
     /// <summary>
     /// Llamado cuando el jugador extrae con éxito de un nivel.
+    /// Devuelve true si el jugador sobrevive (avanza de día o cumple la cuota), 
+    /// o false si no cumple la cuota y pierde el juego.
     /// </summary>
-    public void CompleteDay()
+    public bool CompleteDay()
     {
-        currentDay++;
-        hasDeployedToday = false;
-        Debug.Log("Day Completed! New Day: " + currentDay);
-        // Guardar progreso u otras lógicas
+        if (currentDay >= maxDaysPerWeek)
+        {
+            if (currentMoney >= requiredMoneyQuota)
+            {
+                currentMoney -= requiredMoneyQuota;
+                requiredMoneyQuota *= 1.5f;
+                currentDay = 1;
+                hasDeployedToday = false;
+                Debug.Log($"Cuota cumplida. Semana reiniciada. Nueva cuota: ${requiredMoneyQuota}");
+                return true;
+            }
+            else
+            {
+                Debug.Log("Cuota no cumplida. Fin del juego.");
+                SaveManager.DeleteSave();
+                if (DeathScreenManager.instance != null)
+                {
+                    DeathScreenManager.instance.ShowDeathScreen("YOU WERE FIRED\n\nQuota failed.");
+                }
+                else
+                {
+                    FailDay();
+                }
+                return false;
+            }
+        }
+        else
+        {
+            currentDay++;
+            hasDeployedToday = false;
+            Debug.Log($"Day Completed! New Day: {currentDay}");
+            return true;
+        }
     }
 
     /// <summary>
@@ -94,6 +130,8 @@ public class GameManager : MonoBehaviour
     {
         currentDay = 1;
         hasDeployedToday = false;
+        currentMoney = 0f;
+        requiredMoneyQuota = 10000f;
         // Limpiar inventario u otros datos aquí si los hubiera
     }
 
@@ -105,7 +143,8 @@ public class GameManager : MonoBehaviour
         SaveData data = new SaveData();
         data.currentDay = this.currentDay;
         data.hasDeployedToday = this.hasDeployedToday;
-        // Más adelante: data.totalViews = CameraScoring.instance.GetTotalViews()...
+        data.currentMoney = this.currentMoney;
+        data.requiredMoneyQuota = this.requiredMoneyQuota;
         
         SaveManager.SaveGame(data);
     }
@@ -118,6 +157,8 @@ public class GameManager : MonoBehaviour
         SaveData data = SaveManager.LoadGame();
         this.currentDay = data.currentDay;
         this.hasDeployedToday = data.hasDeployedToday;
+        this.currentMoney = data.currentMoney;
+        this.requiredMoneyQuota = data.requiredMoneyQuota;
     }
 
     private void OnEnable()

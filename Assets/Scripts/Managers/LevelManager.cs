@@ -40,9 +40,15 @@ public class LevelManager : MonoBehaviour
         if (GameManager.instance != null && SceneController.instance != null)
         {
             if (ReplayManager.instance != null) ReplayManager.instance.StopRecording();
-            if (CameraScoring.instance != null) CameraScoring.instance.ShowFinalScore();
+            if (CameraScoring.instance != null) 
+            {
+                int viewsObtained = CameraScoring.instance.GetCurrentScore();
+                float moneyEarned = viewsObtained * 0.5f;
+                GameManager.instance.currentMoney += moneyEarned;
+                Debug.Log($"Extraction: {viewsObtained} views converted to ${moneyEarned}. Total money: ${GameManager.instance.currentMoney}");
+                CameraScoring.instance.ShowFinalScore();
+            }
            
-            // GameManager.instance.CompleteDay(); // Eliminado: Ahora el día se completa al dormir en la cama
             GameManager.instance.hasDeployedToday = true; // El jugador ya hizo su misión de hoy
             
             Debug.Log("Extraction complete. Returning to Hub.");
