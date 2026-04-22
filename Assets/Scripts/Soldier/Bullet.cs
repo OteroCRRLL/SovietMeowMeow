@@ -1,14 +1,20 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class Bullet : MonoBehaviour
 {
+    [Header("Bullet Settings")]
     public float lifeTime = 3f;
     public float damage = 20f;
+    
+    [Header("Filter")]
+    public List<string> targetTags = new List<string>();
+
     private FactionIdentity shooterFaction;
 
     void Start()
     {
-        Destroy(gameObject, lifeTime);
+        Destroy(gameObject, lifeTime); // Destruir bala si no choca con nada en X segundos
     }
     
     public void SetShooterFaction(FactionIdentity faction)
@@ -18,27 +24,47 @@ public class Bullet : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        FactionIdentity hitFaction = collision.gameObject.GetComponentInParent<FactionIdentity>();
+        GameObject hitObj = collision.gameObject;
         
-        // No hacernos daño a nosotros mismos ni a nuestra facción
+        // Comprobar facciones para evitar fuego amigo
+        FactionIdentity hitFaction = hitObj.GetComponentInParent<FactionIdentity>();
         if (hitFaction != null && shooterFaction != null && !shooterFaction.IsEnemy(hitFaction.myFaction))
         {
             Destroy(gameObject);
             return;
         }
 
-        HealthSystem health = collision.gameObject.GetComponent<HealthSystem>();
+        // Buscar el sistema de vida (HealthSystem)
+        HealthSystem health = hitObj.GetComponent<HealthSystem>();
         if (health == null)
         {
-            health = collision.gameObject.GetComponentInParent<HealthSystem>();
+            health = hitObj.GetComponentInParent<HealthSystem>();
         }
 
         if (health != null)
         {
-            health.TakeDamage(damage);
+            // Si usamos target tags (como el TankBullet), comprobamos. Si la lista está vacía, dañamos a cualquier enemigo por defecto.
+            if (targetTags.Count == 0 || targetTags.Contains(hitObj.tag) || hitObj.CompareTag("Player") || hitFaction != null)
+            {
+                health.TakeDamage(damage);
+                
+                // Si la bala impacta a alguien y nosotros tenemos facción, le avisamos de quién le disparó (si es que está vivo y es un soldado)
+                if (shooterFaction != null)
+                {
+                    SoldierBrain hitBrain = hitObj.GetComponentInParent<SoldierBrain>();
+                    if (hitBrain != null)
+                    {
+                        hitBrain.ReceiveAlert(shooterFaction.transform);
+                        if (hitBrain.squadManager != null)
+                        {
+                            hitBrain.squadManager.AlertSquad(shooterFaction.transform);
+                        }
+                    }
+                }
+            }
         }
         
-        // Efecto de impacto podría ir aquí
+        // Destruir la bala al chocar contra lo que sea (suelo, paredes, enemigos)
         Destroy(gameObject);
     }
 }

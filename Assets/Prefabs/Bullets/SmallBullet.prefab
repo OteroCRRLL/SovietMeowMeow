@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 895944527509252617}
   - component: {fileID: 5906657860676818234}
   - component: {fileID: 9202065676311925927}
-  - component: {fileID: 5214928391682931018}
   - component: {fileID: 6222424676742237702}
+  - component: {fileID: -1251908816495291507}
   m_Layer: 11
   m_Name: SmallBullet
   m_TagString: Bullet
@@ -137,27 +137,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &5214928391682931018
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1331472457238647031}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a26bd8c3c7b26c4e8c6e3be260d7529, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  explosionRadius: 9
-  lifeTime: 10
-  explosionDamage: 100
-  collisionTags:
-  - Player
-  - Ground
-  - Building
-  targetTags:
-  - Player
 --- !u!114 &6222424676742237702
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -177,3 +156,18 @@ MonoBehaviour:
   agent: {fileID: 0}
   extraTransforms: []
   boolParams: []
+--- !u!114 &-1251908816495291507
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1331472457238647031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93245cb22eb157940addbb1fe560f026, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lifeTime: 3
+  damage: 20
+  targetTags: []

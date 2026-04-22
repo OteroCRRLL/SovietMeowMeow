@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class SoldierSensor : MonoBehaviour
 {
     [Header("Detection settings")]
-    public float DetectRange = 20f;
+    public float DetectRange = 40f;
     public Transform visionPoint;
     public LayerMask detectableLayers; // En Unity ahora ignoraremos esto para usar ~0 si queremos chocar con todo
 
@@ -49,6 +49,10 @@ public class SoldierSensor : MonoBehaviour
             
             FactionIdentity otherFaction = col.GetComponentInParent<FactionIdentity>();
             if (otherFaction == null || !myFaction.IsEnemy(otherFaction.myFaction)) continue;
+
+            // Ignorar a los muertos
+            HealthSystem targetHealth = col.GetComponentInParent<HealthSystem>();
+            if (targetHealth != null && targetHealth.IsDead) continue;
 
             Vector3 targetPosition = col.bounds.center;
             Vector3 directionToTarget = (targetPosition - visionPoint.position).normalized;
@@ -110,6 +114,10 @@ public class SoldierSensor : MonoBehaviour
     public bool IsTargetVisible(Transform target)
     {
         if (target == null || visionPoint == null) return false;
+
+        // Comprobar que sigue vivo
+        HealthSystem targetHealth = target.GetComponentInParent<HealthSystem>();
+        if (targetHealth != null && targetHealth.IsDead) return false;
 
         Collider targetCollider = target.GetComponentInChildren<Collider>();
         Vector3 targetPosition = targetCollider != null ? targetCollider.bounds.center : target.position + Vector3.up * 0.5f;

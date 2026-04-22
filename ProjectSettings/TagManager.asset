@@ -10,6 +10,8 @@ TagManager:
   - Bullet
   - Camera
   - Corpse
+  - Soviet
+  - MeowMeow
   layers:
   - Default
   - TransparentFX

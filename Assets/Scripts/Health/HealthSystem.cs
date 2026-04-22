@@ -7,6 +7,9 @@ public class HealthSystem : MonoBehaviour
     private float currentHealth;
     private bool isDead = false;
 
+    public bool IsDead => isDead;
+    public float CurrentHealth => currentHealth;
+
     [Header("Eventos al Recibir Daño")]
     public UnityEvent<float> onHealthChanged; // Pasamos el porcentaje de vida (0 a 1)
 
