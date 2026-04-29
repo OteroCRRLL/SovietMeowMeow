@@ -24,10 +24,16 @@ public class TankSensor : MonoBehaviour
     
     // Usamos un array pre-asignado para OverlapSphereNonAlloc (cero Garbage Collection)
     private Collider[] collidersBuffer = new Collider[20]; 
+    private FactionIdentity myFaction;
+
+    private void Start()
+    {
+        myFaction = GetComponentInParent<FactionIdentity>();
+    }
 
     public Transform GetDetectedEnemy()
     {
-        if (visionPoint == null) return null;
+        if (visionPoint == null || myFaction == null) return null;
 
         // Limitar la frecuencia de escaneo para ahorrar muchísimo rendimiento
         if (Time.time < nextScanTime)
@@ -44,8 +50,13 @@ public class TankSensor : MonoBehaviour
         {
             Collider col = collidersBuffer[i];
             
-            // Filtrar rápidamente por las etiquetas válidas
-            if (!targetTags.Contains(col.tag)) continue;
+            // Usar Facciones en lugar de Tags
+            FactionIdentity otherFaction = col.GetComponentInParent<FactionIdentity>();
+            if (otherFaction == null || !myFaction.IsEnemy(otherFaction.myFaction)) continue;
+
+            // Ignorar a los muertos
+            HealthSystem targetHealth = col.GetComponentInParent<HealthSystem>();
+            if (targetHealth != null && targetHealth.IsDead) continue;
 
             // Apuntar al centro del collider en lugar de a los pies (transform.position)
             Vector3 targetPosition = col.bounds.center;
@@ -65,17 +76,37 @@ public class TankSensor : MonoBehaviour
             
             if (angleToTarget <= angleDifference / 2f)
             {
-                // 3. Lanzar 1 ÚNICO Raycast hacia el objetivo para ver si hay paredes bloqueando
+                // 3. Lanzar Raycast hacia el objetivo para ver si hay paredes bloqueando
                 float distanceToTarget = Vector3.Distance(visionPoint.position, targetPosition);
                 
-                if (Physics.Raycast(visionPoint.position, directionToTarget, out RaycastHit hit, distanceToTarget, ~0, QueryTriggerInteraction.Ignore))
+                RaycastHit[] hits = Physics.RaycastAll(visionPoint.position, directionToTarget, distanceToTarget + 0.5f, detectableLayers, QueryTriggerInteraction.Ignore);
+                System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+                
+                bool hitWall = false;
+                foreach (RaycastHit hit in hits)
                 {
-                    // Comprobamos si el rayo dio en el objetivo (o en su etiqueta) y no en un muro
-                    if (hit.collider == col || targetTags.Contains(hit.collider.tag))
+                    // Ignorar a nosotros mismos
+                    if (hit.collider.transform.root == transform.root) continue;
+                    
+                    FactionIdentity hitFaction = hit.collider.GetComponentInParent<FactionIdentity>();
+                    if (hit.collider.transform.root == col.transform.root || (hitFaction != null && myFaction.IsEnemy(hitFaction.myFaction)))
                     {
                         Debug.DrawRay(visionPoint.position, directionToTarget * distanceToTarget, Color.green, 1f / scanFrequency);
                         return col.transform; // ¡Enemigo detectado!
                     }
+                    else
+                    {
+                        // Si chocamos con algo que no somos nosotros ni el objetivo/enemigo, asumimos que es un muro
+                        hitWall = true;
+                        break; 
+                    }
+                }
+                
+                // Si el raycast no chocó con ningún muro, consideramos que lo vemos (útil si el raycast pasa el collider por poco)
+                if (!hitWall)
+                {
+                    Debug.DrawRay(visionPoint.position, directionToTarget * distanceToTarget, Color.green, 1f / scanFrequency);
+                    return col.transform;
                 }
             }
         }
@@ -98,12 +129,22 @@ public class TankSensor : MonoBehaviour
         Vector3 directionToTarget = (targetPosition - visionPoint.position).normalized;
 
         // Lanzamos un raycast directo al objetivo para mantener el "lock"
-        if (Physics.Raycast(visionPoint.position, directionToTarget, out RaycastHit hit, DetectRange, ~0, QueryTriggerInteraction.Ignore))
+        RaycastHit[] hits = Physics.RaycastAll(visionPoint.position, directionToTarget, DetectRange, detectableLayers, QueryTriggerInteraction.Ignore);
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        foreach (RaycastHit hit in hits)
         {
-            if (hit.transform == target || targetTags.Contains(hit.collider.tag))
+            // Ignorar el propio tanque
+            if (hit.collider.transform.root == transform.root) continue;
+
+            FactionIdentity hitFaction = hit.collider.GetComponentInParent<FactionIdentity>();
+            if (hit.transform.root == target.root || (hitFaction != null && myFaction != null && myFaction.IsEnemy(hitFaction.myFaction)))
             {
                 return true;
             }
+            
+            // Chocó contra un muro u otro obstáculo
+            return false;
         }
         
         return false;

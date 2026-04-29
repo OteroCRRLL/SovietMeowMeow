@@ -124,6 +124,40 @@ public class SquadManager : MonoBehaviour
         }
     }
 
+    public void HandlePlayerSpotted(Transform player)
+    {
+        // Si no tenemos a nadie cazando al jugador o el que lo caza murió
+        if (currentHunter == null || !currentHunter.gameObject.activeInHierarchy || currentHunter.CurrentState == SoldierState.Dead)
+        {
+            // Intentar asignar a un soldado que NO esté en combate con otros enemigos
+            SoldierBrain bestHunter = null;
+            foreach (SoldierBrain member in members)
+            {
+                if (member != null && member.gameObject.activeInHierarchy && member.CurrentState != SoldierState.Dead)
+                {
+                    if (bestHunter == null) 
+                    {
+                        bestHunter = member;
+                    }
+                    else if (member.CurrentState != SoldierState.Combat && bestHunter.CurrentState == SoldierState.Combat)
+                    {
+                        bestHunter = member; // Preferimos a alguien libre
+                    }
+                }
+            }
+            
+            if (bestHunter != null)
+            {
+                currentHunter = bestHunter;
+            }
+        }
+    }
+
+    public bool IsHunter(SoldierBrain soldier)
+    {
+        return currentHunter == soldier;
+    }
+
     public void AlertSquad(Transform target)
     {
         foreach (SoldierBrain member in members)
@@ -147,6 +181,25 @@ public class SquadManager : MonoBehaviour
                 if (member.CurrentTarget == target && member.HasLineOfSight)
                 {
                     return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public bool IsFightingEnemies()
+    {
+        foreach (SoldierBrain member in members)
+        {
+            if (member != null && member.gameObject.activeInHierarchy && member.CurrentState != SoldierState.Dead)
+            {
+                if (member.CurrentState == SoldierState.Combat && member.CurrentTarget != null)
+                {
+                    FactionIdentity targetFaction = member.CurrentTarget.GetComponentInParent<FactionIdentity>();
+                    if (targetFaction != null && targetFaction.myFaction != FactionType.Player)
+                    {
+                        return true;
+                    }
                 }
             }
         }

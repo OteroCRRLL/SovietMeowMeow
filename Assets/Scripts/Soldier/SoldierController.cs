@@ -55,7 +55,10 @@ public class SoldierController : MonoBehaviour
             Vector3 direction = shootPoint.forward;
             if (target != null)
             {
-                direction = (target.position - shootPoint.position).normalized;
+                // Apuntar al centro del objetivo en lugar de a sus pies
+                Collider targetCollider = target.GetComponentInChildren<Collider>();
+                Vector3 targetCenter = targetCollider != null ? targetCollider.bounds.center : target.position + Vector3.up * 1f;
+                direction = (targetCenter - shootPoint.position).normalized;
             }
 
             float randomX = Random.Range(-spreadAngle, spreadAngle);

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public enum TankState { Patrol, Lock, Shoot }
+public enum TankState { Patrol, Lock, Shoot, Dead }
 public class TankBrain : MonoBehaviour
 {
 
@@ -26,10 +26,26 @@ public class TankBrain : MonoBehaviour
     private Transform currentTarget;
     private float lostTargetTimer = 0f;
     private float shootTimer = 0f;
+    private HealthSystem health;
 
     // Start is called before the first frame update
     void Start()
     {
+        // Evitar que el tanque salga volando por los aires al recibir disparos físicos
+        Rigidbody[] rbs = GetComponentsInChildren<Rigidbody>();
+        foreach (Rigidbody rb in rbs)
+        {
+            rb.mass = 50000f; // Peso hiperrealista
+            rb.isKinematic = true; // Como se mueve por NavMesh, bloqueamos las fuerzas físicas externas
+        }
+        
+        Rigidbody parentRb = GetComponentInParent<Rigidbody>();
+        if (parentRb != null)
+        {
+            parentRb.mass = 50000f;
+            parentRb.isKinematic = true;
+        }
+
         controller.SetPatrolAnimation(true);
 
         if (waypoints.Length > 0)
@@ -37,12 +53,18 @@ public class TankBrain : MonoBehaviour
             agent.SetDestination(waypoints[currentWaypointIndex].position); //Start patrolling routes
         }
 
-        
+        health = GetComponent<HealthSystem>();
+        if (health != null)
+        {
+            health.onDeath.AddListener(HandleDeath);
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (currentState == TankState.Dead) return;
+
         switch (currentState)
         {
             case TankState.Patrol:
@@ -143,5 +165,32 @@ public class TankBrain : MonoBehaviour
 
         controller.SetPatrolAnimation(true);
         currentState = TankState.Patrol;
+    }
+
+    private void HandleDeath()
+    {
+        currentState = TankState.Dead;
+        
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.enabled = false;
+        }
+        
+        controller.SetPatrolAnimation(false);
+        
+        if (sensor != null) sensor.enabled = false;
+        
+        // Destruimos el tanque después de un tiempo para que el cadáver no se quede para siempre
+        // También puedes poner aquí instanciar una explosión visual o un modelo de tanque destruido
+        Destroy(gameObject, 15f);
+    }
+
+    private void OnDestroy()
+    {
+        if (health != null)
+        {
+            health.onDeath.RemoveListener(HandleDeath);
+        }
     }
 }

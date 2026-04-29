@@ -149,9 +149,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a26bd8c3c7b26c4e8c6e3be260d7529, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  explosionRadius: 9
+  explosionRadius: 14
   lifeTime: 10
-  explosionDamage: 100
+  explosionDamage: 500
   collisionTags:
   - Player
   - Ground

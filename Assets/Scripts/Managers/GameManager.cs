@@ -117,10 +117,25 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// Llamado cuando el jugador muere o falla el nivel.
     /// </summary>
-    public void FailDay()
+    public bool FailDay()
     {
-        Debug.Log("Day Failed! Resetting progress...");
-        ResetProgress();
+        Debug.Log("Day Failed! Perdiste las views conseguidas hoy.");
+        
+        // Comprobar si ya no quedan días y no llegamos a la cuota
+        if (currentDay >= maxDaysPerWeek && currentMoney < requiredMoneyQuota)
+        {
+            Debug.Log("Cuota no cumplida. Fin del juego.");
+            SaveManager.DeleteSave();
+            ResetProgress();
+            return false; // Despedido -> MainMenu
+        }
+        
+        // Si no estamos despedidos, no avanzamos de día automáticamente.
+        // Simplemente marcamos que ya hemos gastado la expedición de hoy.
+        // El jugador volverá al Hub y tendrá que dormir para avanzar al siguiente día.
+        hasDeployedToday = true;
+        
+        return true; // Sobrevive -> Hub
     }
 
     /// <summary>

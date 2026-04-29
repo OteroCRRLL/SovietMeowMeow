@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2939890742776565595}
   - component: {fileID: 4356385178900527997}
   - component: {fileID: 7757151659342451108}
+  - component: {fileID: 2094029322663310953}
   m_Layer: 7
   m_Name: TankAgent
   m_TagString: Enemy
@@ -100,6 +101,19 @@ MonoBehaviour:
   - {fileID: 8050293110470912604}
   boolParams:
   - isPatrolling
+--- !u!114 &2094029322663310953
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1188765585109061863}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be01759f7b31a7d47a04cd1a04d05b57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  myFaction: 1
 --- !u!1 &1912920246314145819
 GameObject:
   m_ObjectHideFlags: 0
@@ -135,7 +149,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.02, y: 3.1621}
+  m_AnchoredPosition: {x: -0.02, y: 2.45}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &5422772599957074497
@@ -634,7 +648,7 @@ MonoBehaviour:
   visionPoint: {fileID: 7490931383775867468}
   detectableLayers:
     serializedVersion: 2
-    m_Bits: 704
+    m_Bits: 6143
   angleDifference: 10
   targetTags:
   - Player
@@ -670,7 +684,7 @@ Transform:
   m_GameObject: {fileID: 8763149640857545876}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.707106, z: -0, w: 0.7071076}
-  m_LocalPosition: {x: -0.000007815659, y: -0.017273068, z: -0.06494284}
+  m_LocalPosition: {x: -0.000007815659, y: -0.73, z: -0.06494284}
   m_LocalScale: {x: 7.0394526, y: 1.8564374, z: 5.8264327}
   m_ConstrainProportionsScale: 0
   m_Children:

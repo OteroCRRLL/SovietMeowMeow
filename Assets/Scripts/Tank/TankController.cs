@@ -53,6 +53,12 @@ public class TankController : MonoBehaviour
     {
         //Spawn bullet on firepoint
         GameObject bullet = Instantiate(bulletPrefab, shootPoint.position, shootPoint.rotation);
+        
+        TankBullets bulletScript = bullet.GetComponent<TankBullets>();
+        if (bulletScript != null)
+        {
+            bulletScript.SetShooterFaction(GetComponentInParent<FactionIdentity>());
+        }
 
         //Shoot bullet
         if (bullet.TryGetComponent<Rigidbody>(out Rigidbody rb))
@@ -61,9 +67,10 @@ public class TankController : MonoBehaviour
 
             if (target != null)
             {
- 
-                direction = (target.position - shootPoint.position).normalized;
-
+                // Apuntar al centro del objetivo en lugar de a sus pies
+                Collider targetCollider = target.GetComponentInChildren<Collider>();
+                Vector3 targetCenter = targetCollider != null ? targetCollider.bounds.center : target.position + Vector3.up * 1f;
+                direction = (targetCenter - shootPoint.position).normalized;
             }
 
             else

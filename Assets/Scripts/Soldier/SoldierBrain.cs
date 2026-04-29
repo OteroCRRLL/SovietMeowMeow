@@ -44,6 +44,9 @@ public class SoldierBrain : MonoBehaviour
     // Variables de patrulla
     private float waitTimer = 0f;
     private bool isWaiting = false;
+
+    private float walkSpeed = 3.5f;
+    private float runSpeed = 7f;
     
     private void Start()
     {
@@ -53,6 +56,12 @@ public class SoldierBrain : MonoBehaviour
         if (sensor == null) sensor = GetComponentInChildren<SoldierSensor>();
         if (controller == null) controller = GetComponentInChildren<SoldierController>();
         if (agent == null) agent = GetComponent<NavMeshAgent>();
+
+        if (agent != null)
+        {
+            walkSpeed = agent.speed;
+            runSpeed = walkSpeed * 2f;
+        }
 
         health = GetComponent<HealthSystem>();
         if (health != null)
@@ -112,12 +121,61 @@ public class SoldierBrain : MonoBehaviour
         }
 
         // 2. Visión y Aggro
-        bool isPlayer = false;
-        Transform visibleTarget = null;
+        Transform visibleEnemy = null;
+        Transform visiblePlayer = null;
         
         if (sensor != null)
         {
-            visibleTarget = sensor.GetBestTarget(out isPlayer);
+            sensor.GetTargets(out visibleEnemy, out visiblePlayer);
+        }
+
+        // Barrido de Visión si no estamos en combate
+        if (currentState == SoldierState.Patrol || currentState == SoldierState.FollowLeader)
+        {
+            if (sensor != null) sensor.SweepVision();
+        }
+        else
+        {
+            if (sensor != null) sensor.ResetVision();
+        }
+
+        // Avisar al squad manager si vemos al jugador
+        if (visiblePlayer != null && squadManager != null)
+        {
+            squadManager.HandlePlayerSpotted(visiblePlayer);
+        }
+
+        bool fightingEnemies = squadManager != null && squadManager.IsFightingEnemies();
+        bool amIHunter = squadManager == null || !fightingEnemies || squadManager.IsHunter(this);
+        
+        if (amIHunter)
+        {
+            // El Hunter (o todo el escuadrón si no hay otros enemigos) prioriza al jugador
+            if (visiblePlayer != null)
+            {
+                currentTarget = visiblePlayer;
+                targetLostTimer = 0f;
+            }
+            else if (visibleEnemy != null)
+            {
+                // Si no ve al jugador pero ve a un enemigo, le ataca
+                currentTarget = visibleEnemy;
+                targetLostTimer = 0f;
+                if (squadManager != null) squadManager.AlertSquad(currentTarget);
+            }
+        }
+        else
+        {
+            // El resto del escuadrón (los no-hunters) prioriza enemigos para defender
+            if (visibleEnemy != null)
+            {
+                if (currentTarget != visibleEnemy)
+                {
+                    currentTarget = visibleEnemy;
+                    if (squadManager != null) squadManager.AlertSquad(currentTarget);
+                }
+                targetLostTimer = 0f;
+            }
         }
         
         // Si ya teníamos un objetivo y lo seguimos viendo, mantenemos el Lock
@@ -126,23 +184,11 @@ public class SoldierBrain : MonoBehaviour
             if (sensor != null && sensor.IsTargetVisible(currentTarget))
             {
                 targetLostTimer = 0f;
-                // Excepción: Si vemos a una Facción rival y estábamos persiguiendo al Player, cambiamos a la Facción (Guerra > Civil)
-                if (currentState == SoldierState.HuntPlayer && visibleTarget != null && !isPlayer)
-                {
-                    currentTarget = visibleTarget;
-                }
             }
             else
             {
                 targetLostTimer += Time.deltaTime;
-                if (visibleTarget != null)
-                {
-                    // Vemos a otro mientras el nuestro está escondido, cambiamos de objetivo!
-                    currentTarget = visibleTarget;
-                    targetLostTimer = 0f;
-                    if (squadManager != null) squadManager.AlertSquad(currentTarget);
-                }
-                else if (targetLostTimer >= targetMemoryTime)
+                if (targetLostTimer >= targetMemoryTime)
                 {
                     bool squadStillFighting = false;
                     if (squadManager != null)
@@ -160,24 +206,17 @@ public class SoldierBrain : MonoBehaviour
                     {
                         // Perdimos al objetivo definitivamente tras el tiempo de memoria
                         currentTarget = null;
+                        if (currentState == SoldierState.HuntPlayer && squadManager != null)
+                        {
+                            squadManager.ClearHunter(this);
+                        }
                     }
                 }
             }
         }
-        else if (visibleTarget != null)
+        else
         {
-            currentTarget = visibleTarget;
-            targetLostTimer = 0f;
-            
-            // Avisar al resto del escuadrón
-            if (squadManager != null)
-            {
-                squadManager.AlertSquad(currentTarget);
-            }
-        }
-        
-        if (currentTarget == null)
-        {
+            // Perdimos al objetivo
             if (currentState == SoldierState.Combat || currentState == SoldierState.HuntPlayer)
             {
                 if (currentState == SoldierState.HuntPlayer && squadManager != null)
@@ -201,14 +240,13 @@ public class SoldierBrain : MonoBehaviour
             FactionIdentity targetFaction = currentTarget.GetComponentInParent<FactionIdentity>();
             if (targetFaction != null && targetFaction.myFaction == FactionType.Player)
             {
-                // Es el Jugador: Preguntar al SquadManager si podemos cazarlo
-                if (squadManager == null || squadManager.RequestHuntPlayer(this))
+                if (amIHunter || squadManager == null)
                 {
                     currentState = SoldierState.HuntPlayer;
                 }
                 else
                 {
-                    // Otro soldado ya lo persigue, le ignoramos
+                    // Si somos seguidores, el hunter está ocupándose de él, nosotros patrullamos
                     currentTarget = null;
                     currentState = isLeader ? SoldierState.Patrol : SoldierState.FollowLeader;
                 }
@@ -280,6 +318,7 @@ public class SoldierBrain : MonoBehaviour
             else
             {
                 controller.SetAnimation("Walk");
+                if (agent != null) agent.speed = walkSpeed;
                 agent.isStopped = false;
                 
                 // Esperar a que tenga una ruta válida antes de comprobar la distancia
@@ -332,6 +371,7 @@ public class SoldierBrain : MonoBehaviour
     private void UpdateFollow()
     {
         controller.SetAnimation("Walk");
+        if (agent != null) agent.speed = walkSpeed;
         if (squadManager != null && squadManager.leader != null)
         {
             if (agent != null && agent.isOnNavMesh)
@@ -468,12 +508,14 @@ public class SoldierBrain : MonoBehaviour
                     // Estamos a buena distancia pero no le vemos (escondido tras un muro o aliado). 
                     // Apuntamos y esperamos a que el timer nos haga movernos.
                     controller.SetAnimation("Walk"); // O Idle de combate
+                    if (agent != null) agent.speed = walkSpeed;
                 }
             }
             else
             {
                 if (agent != null && agent.isOnNavMesh) agent.isStopped = false;
                 controller.SetAnimation("Walk"); // Caminar tácticamente, no correr
+                if (agent != null) agent.speed = walkSpeed;
             }
         }
         else
@@ -483,6 +525,7 @@ public class SoldierBrain : MonoBehaviour
             {
                 agent.isStopped = false;
                 controller.SetAnimation("Run");
+                if (agent != null) agent.speed = runSpeed;
                 
                 Vector3 targetPos = currentTarget.position;
                 
@@ -525,8 +568,8 @@ public class SoldierBrain : MonoBehaviour
         Vector3 direction = (target.position - controller.shootPoint.position).normalized;
         float dist = Vector3.Distance(controller.shootPoint.position, target.position);
         
-        // Raycast para ver si hay un aliado en medio o una pared (usando LayerMask default ~0)
-        if (Physics.Raycast(controller.shootPoint.position, direction, out RaycastHit hit, dist, ~0, QueryTriggerInteraction.Ignore))
+        // Raycast para ver si hay un aliado en medio o una pared (usando detectableLayers)
+        if (Physics.Raycast(controller.shootPoint.position, direction, out RaycastHit hit, dist, sensor != null ? sensor.detectableLayers : (LayerMask)~0, QueryTriggerInteraction.Ignore))
         {
             FactionIdentity hitFaction = hit.collider.GetComponentInParent<FactionIdentity>();
             FactionIdentity myFaction = GetComponent<FactionIdentity>();
@@ -555,6 +598,7 @@ public class SoldierBrain : MonoBehaviour
         {
             agent.isStopped = false;
             controller.SetAnimation("Run");
+            if (agent != null) agent.speed = runSpeed;
             agent.SetDestination(currentTarget.position);
         }
         controller.RotateTowards(currentTarget);

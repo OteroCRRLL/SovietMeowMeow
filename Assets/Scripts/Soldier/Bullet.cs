@@ -15,6 +15,12 @@ public class Bullet : MonoBehaviour
     void Start()
     {
         Destroy(gameObject, lifeTime); // Destruir bala si no choca con nada en X segundos
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.mass = 0.0001f; // Evitar que la bala empuje objetos con físicas al colisionar
+            rb.useGravity = false; // Hacer que la bala vaya recta y no caiga al suelo
+        }
     }
     
     public void SetShooterFaction(FactionIdentity faction)
@@ -48,7 +54,7 @@ public class Bullet : MonoBehaviour
             {
                 health.TakeDamage(damage);
                 
-                // Si la bala impacta a alguien y nosotros tenemos facción, le avisamos de quién le disparó (si es que está vivo y es un soldado)
+                // Si la bala impacta a alguien y nosotros tenemos facción, le avisamos de quién le disparó (si es que está vivo y es un soldado o dron)
                 if (shooterFaction != null)
                 {
                     SoldierBrain hitBrain = hitObj.GetComponentInParent<SoldierBrain>();
@@ -59,6 +65,12 @@ public class Bullet : MonoBehaviour
                         {
                             hitBrain.squadManager.AlertSquad(shooterFaction.transform);
                         }
+                    }
+
+                    DroneBrain hitDrone = hitObj.GetComponentInParent<DroneBrain>();
+                    if (hitDrone != null)
+                    {
+                        hitDrone.ReceiveAlert(shooterFaction.transform);
                     }
                 }
             }

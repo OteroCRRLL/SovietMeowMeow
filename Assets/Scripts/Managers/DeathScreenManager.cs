@@ -101,9 +101,21 @@ public class DeathScreenManager : MonoBehaviour
         deathCanvasGroup.alpha = 1f;
 
         // Fase 2: Mostrar el mensaje y resetear el progreso del juego en silencio
+        string sceneToLoad = "MainMenu";
         if (GameManager.instance != null)
         {
-            GameManager.instance.FailDay(); // Esto llama a ResetProgress() en GameManager
+            bool survived = GameManager.instance.FailDay(); // Esto avanza el día o resetea el progreso
+            if (survived)
+            {
+                sceneToLoad = "Hub";
+            }
+            else
+            {
+                if (deathText != null && !deathText.text.Contains("FIRED"))
+                {
+                    deathText.text += "\n\nYOU WERE FIRED (Quota failed)";
+                }
+            }
         }
         
         yield return new WaitForSecondsRealtime(displayDuration);
@@ -112,14 +124,14 @@ public class DeathScreenManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        // Fase 3: Cargar la escena del Menú Principal
+        // Fase 3: Cargar la escena correspondiente (Hub o MainMenu)
         if (SceneController.instance != null)
         {
-            SceneController.instance.LoadScene("MainMenu");
+            SceneController.instance.LoadScene(sceneToLoad);
         }
         else
         {
-            SceneManager.LoadScene("MainMenu");
+            SceneManager.LoadScene(sceneToLoad);
         }
 
         // Devolvemos el tiempo a la normalidad
@@ -141,12 +153,25 @@ public class DeathScreenManager : MonoBehaviour
 
     private void ForceRestart()
     {
-        if (GameManager.instance != null) GameManager.instance.FailDay();
+        string sceneToLoad = "MainMenu";
+        if (GameManager.instance != null)
+        {
+            bool survived = GameManager.instance.FailDay();
+            if (survived) sceneToLoad = "Hub";
+        }
+        
         Time.timeScale = 1f;
         
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         
-        SceneManager.LoadScene("MainMenu");
+        if (SceneController.instance != null)
+        {
+            SceneController.instance.LoadScene(sceneToLoad);
+        }
+        else
+        {
+            SceneManager.LoadScene(sceneToLoad);
+        }
     }
 }
