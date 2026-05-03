@@ -48,9 +48,13 @@ public class TankBrain : MonoBehaviour
 
         controller.SetPatrolAnimation(true);
 
-        if (waypoints.Length > 0)
+        if (waypoints != null && waypoints.Length > 0)
         {
             agent.SetDestination(waypoints[currentWaypointIndex].position); //Start patrolling routes
+        }
+        else
+        {
+            SetLongDistancePatrolPoint();
         }
 
         health = GetComponent<HealthSystem>();
@@ -87,10 +91,33 @@ public class TankBrain : MonoBehaviour
     {
         
         //1. Follow NavMesh route
-        if (!agent.pathPending && agent.remainingDistance < 0.5f) //0.5 offset to avoid extreme precision
+        bool shouldSetNewDestination = false;
+
+        if (!agent.pathPending)
+        {
+            // Llegó al destino
+            if (agent.remainingDistance < 1.0f) 
+            {
+                shouldSetNewDestination = true;
+            }
+            // Si el camino es inválido o se queda atascado
+            else if (agent.pathStatus == NavMeshPathStatus.PathInvalid || agent.pathStatus == NavMeshPathStatus.PathPartial)
+            {
+                shouldSetNewDestination = true;
+            }
+        }
+
+        if (shouldSetNewDestination)
         { 
-            currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length; //Loop
-            agent.SetDestination(waypoints[currentWaypointIndex].position);
+            if (waypoints != null && waypoints.Length > 0)
+            {
+                currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length; //Loop
+                agent.SetDestination(waypoints[currentWaypointIndex].position);
+            }
+            else
+            {
+                SetLongDistancePatrolPoint();
+            }
         }
 
         //2. Detect Enemies
@@ -161,10 +188,53 @@ public class TankBrain : MonoBehaviour
         agent.isStopped = false;
         agent.updateRotation = true;
 
-        agent.SetDestination(waypoints[currentWaypointIndex].position);
+        if (waypoints != null && waypoints.Length > 0)
+        {
+            agent.SetDestination(waypoints[currentWaypointIndex].position);
+        }
+        else
+        {
+            SetLongDistancePatrolPoint();
+        }
 
         controller.SetPatrolAnimation(true);
         currentState = TankState.Patrol;
+    }
+
+    private void SetLongDistancePatrolPoint()
+    {
+        bool pointFound = false;
+        int attempts = 0;
+        
+        while (!pointFound && attempts < 15)
+        {
+            attempts++;
+            // Buscamos un punto aleatorio pero muy lejano (ej. entre 50 y 150 metros)
+            Vector2 randomDir = Random.insideUnitCircle.normalized * Random.Range(50f, 150f);
+            Vector3 targetPos = transform.position + new Vector3(randomDir.x, 0, randomDir.y);
+            
+            if (NavMesh.SamplePosition(targetPos, out NavMeshHit hit, 20f, NavMesh.AllAreas))
+            {
+                // Intentamos calcular una ruta completa para asegurarnos de que puede llegar físicamente sin atascarse
+                NavMeshPath path = new NavMeshPath();
+                if (agent.CalculatePath(hit.position, path) && path.status == NavMeshPathStatus.PathComplete)
+                {
+                    agent.SetDestination(hit.position);
+                    pointFound = true;
+                }
+            }
+        }
+        
+        if (!pointFound)
+        {
+            // Fallback si tras 15 intentos no encuentra nada tan lejos (mapa pequeño o aislado)
+            Vector2 fallbackDir = Random.insideUnitCircle.normalized * 20f;
+            Vector3 fallbackPos = transform.position + new Vector3(fallbackDir.x, 0, fallbackDir.y);
+            if (NavMesh.SamplePosition(fallbackPos, out NavMeshHit hit, 10f, NavMesh.AllAreas))
+            {
+                agent.SetDestination(hit.position);
+            }
+        }
     }
 
     private void HandleDeath()

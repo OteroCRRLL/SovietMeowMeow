@@ -44,6 +44,24 @@ public class SoldierBrain : MonoBehaviour
     // Variables de patrulla
     private float waitTimer = 0f;
     private bool isWaiting = false;
+    private bool hasOverrideDestination = false;
+    private Vector3 overrideDestination;
+
+    public void ForceOverrideDestination(Vector3 dest)
+    {
+        hasOverrideDestination = true;
+        overrideDestination = dest;
+        isWaiting = false; // Cancelar esperas
+    }
+
+    public void ClearOverrideDestination()
+    {
+        if (hasOverrideDestination)
+        {
+            hasOverrideDestination = false;
+            SetRandomPatrolDestination();
+        }
+    }
 
     private float walkSpeed = 3.5f;
     private float runSpeed = 7f;
@@ -303,7 +321,7 @@ public class SoldierBrain : MonoBehaviour
     {
         if (agent != null && agent.isOnNavMesh)
         {
-            if (isWaiting)
+            if (isWaiting && !hasOverrideDestination)
             {
                 controller.SetAnimation("Idle"); // Opcional: una animación de estar quieto vigilando
                 agent.isStopped = true;
@@ -320,6 +338,12 @@ public class SoldierBrain : MonoBehaviour
                 controller.SetAnimation("Walk");
                 if (agent != null) agent.speed = walkSpeed;
                 agent.isStopped = false;
+                
+                if (hasOverrideDestination)
+                {
+                    agent.SetDestination(overrideDestination);
+                    return;
+                }
                 
                 // Esperar a que tenga una ruta válida antes de comprobar la distancia
                 if (!agent.pathPending)
@@ -350,6 +374,7 @@ public class SoldierBrain : MonoBehaviour
     private void SetRandomPatrolDestination()
     {
         if (agent == null || !agent.isOnNavMesh) return;
+        if (hasOverrideDestination) return;
 
         // Elegir un punto aleatorio entre 10 y el radio máximo para evitar que elija un punto en sus propios pies
         Vector2 randomCircle = Random.insideUnitCircle.normalized * Random.Range(10f, patrolRadius);

@@ -118,6 +118,9 @@ public class TankSensor : MonoBehaviour
     {
         if (target == null || visionPoint == null) return false;
 
+        HealthSystem targetHealth = target.GetComponentInParent<HealthSystem>();
+        if (targetHealth != null && targetHealth.IsDead) return false;
+
         Collider targetCollider = target.GetComponentInChildren<Collider>();
         Vector3 targetPosition = targetCollider != null ? targetCollider.bounds.center : target.position + Vector3.up * 0.5f;
 

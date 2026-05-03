@@ -235,7 +235,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e18928c3785628c4e9484e2a7ab959a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
+  maxHealth: 500
   onHealthChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -289,7 +289,7 @@ MonoBehaviour:
   diveSpeed: 35
   lockTime: 2.5
   memoryTime: 3
-  explosionDamage: 300
+  explosionDamage: 150
   explosionRadius: 12.45
 --- !u!1 &2465308772161534216
 GameObject:
@@ -338,6 +338,7 @@ MonoBehaviour:
   DetectRange: 30
   visionPoint: {fileID: 7918797973693994812}
   angleDifference: 140
+  downwardAngle: 70
   scanFrequency: 5
 --- !u!1 &3957629929152192995
 GameObject:

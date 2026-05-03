@@ -9,10 +9,39 @@ public class SquadManager : MonoBehaviour
     // Almacena qué soldado del escuadrón está persiguiendo actualmente al Player
     private SoldierBrain currentHunter = null;
     private bool wasInCombat = false;
+    private bool isInserting = false;
+    private Vector3 insertionTarget;
+
+    public void StartInsertion(Vector3 point)
+    {
+        isInserting = true;
+        insertionTarget = point;
+    }
 
     private void Update()
     {
         if (members.Count == 0) return;
+
+        if (isInserting && leader != null)
+        {
+            SoldierBrain leaderBrain = members[0];
+            if (leaderBrain.CurrentState == SoldierState.Patrol)
+            {
+                leaderBrain.ForceOverrideDestination(insertionTarget);
+
+                if (Vector3.Distance(leader.position, insertionTarget) < 5f)
+                {
+                    isInserting = false;
+                    leaderBrain.ClearOverrideDestination();
+                }
+            }
+            else
+            {
+                // Si entran en combate o detectan algo, cancelamos la inserción para que actúen normal
+                isInserting = false;
+                leaderBrain.ClearOverrideDestination();
+            }
+        }
 
         bool inCombat = IsSquadInCombat();
         if (inCombat != wasInCombat)
