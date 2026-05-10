@@ -815,6 +815,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7879829901720201142, guid: fa11b06e12724a9489669ea2fd4c30be,
         type: 3}
+      propertyPath: itemDatabase
+      value: 
+      objectReference: {fileID: 11400000, guid: c484d4c1c7d94ba4a9623c41013bd1a5,
+        type: 2}
+    - target: {fileID: 7879829901720201142, guid: fa11b06e12724a9489669ea2fd4c30be,
+        type: 3}
       propertyPath: playerPrefab
       value: 
       objectReference: {fileID: 8464138701586873959, guid: b6cafc55c5086984d8860a08e1425786,

@@ -13,5 +13,8 @@ public class SaveData
     // Futuras expansiones para la Beta
     public float totalViews = 0f;
     public List<string> unlockedPOIs = new List<string>();
+    
+    // Inventario y equipamiento
     public List<string> hubInventory = new List<string>();
+    public string[] equippedItems = new string[3] { "", "", "" };
 }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
@@ -21,6 +22,11 @@ public class GameManager : MonoBehaviour
     public int maxDaysPerWeek = 3;
     public float currentMoney = 0f;
     public float requiredMoneyQuota = 10000f;
+
+    [Header("Inventario")]
+    public ItemDatabase itemDatabase;
+    public List<string> hubInventory = new List<string>();
+    public string[] equippedItems = new string[3] { "", "", "" };
 
     [Header("Player Instantiation")]
     public GameObject playerPrefab;
@@ -121,6 +127,10 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("Day Failed! Perdiste las views conseguidas hoy.");
         
+        // Perder objetos equipados al morir
+        Debug.Log("Has perdido los objetos que llevabas equipados.");
+        equippedItems = new string[3] { "", "", "" };
+        
         // Comprobar si ya no quedan días y no llegamos a la cuota
         if (currentDay >= maxDaysPerWeek && currentMoney < requiredMoneyQuota)
         {
@@ -147,7 +157,9 @@ public class GameManager : MonoBehaviour
         hasDeployedToday = false;
         currentMoney = 0f;
         requiredMoneyQuota = 10000f;
-        // Limpiar inventario u otros datos aquí si los hubiera
+        
+        hubInventory.Clear();
+        equippedItems = new string[3] { "", "", "" };
     }
 
     /// <summary>
@@ -160,6 +172,9 @@ public class GameManager : MonoBehaviour
         data.hasDeployedToday = this.hasDeployedToday;
         data.currentMoney = this.currentMoney;
         data.requiredMoneyQuota = this.requiredMoneyQuota;
+        
+        data.hubInventory = new List<string>(this.hubInventory);
+        data.equippedItems = (string[])this.equippedItems.Clone();
         
         SaveManager.SaveGame(data);
     }
@@ -174,6 +189,29 @@ public class GameManager : MonoBehaviour
         this.hasDeployedToday = data.hasDeployedToday;
         this.currentMoney = data.currentMoney;
         this.requiredMoneyQuota = data.requiredMoneyQuota;
+        
+        this.hubInventory = new List<string>(data.hubInventory);
+        if (data.equippedItems != null && data.equippedItems.Length == 3)
+        {
+            this.equippedItems = (string[])data.equippedItems.Clone();
+        }
+    }
+
+    public bool BuyItem(ItemData item)
+    {
+        if (currentMoney >= item.price)
+        {
+            currentMoney -= item.price;
+            hubInventory.Add(item.itemID);
+            SaveGame(); // Guardado automático al comprar
+            Debug.Log("Objeto comprado: " + item.itemName);
+            return true;
+        }
+        else
+        {
+            Debug.Log("No hay suficiente dinero para: " + item.itemName);
+            return false;
+        }
     }
 
     private void OnEnable()

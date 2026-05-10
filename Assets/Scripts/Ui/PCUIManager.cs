@@ -19,6 +19,7 @@ public class PCUIManager : MonoBehaviour
     private MonoBehaviour cameraController;
     private MonoBehaviour playerInteraction;
     private Camera playerCamera;
+    private Transform playerHUDCanvas;
 
     // Guardar posición original de la cámara
     private Transform originalCameraParent;
@@ -83,6 +84,14 @@ public class PCUIManager : MonoBehaviour
         if (playerController != null) playerController.enabled = false;
         if (cameraController != null) cameraController.enabled = false;
         if (playerInteraction != null) playerInteraction.enabled = false;
+
+        // Ocultar HUD del jugador
+        Transform canvasTransform = currentPlayer.transform.Find("Canvas");
+        if (canvasTransform != null)
+        {
+            playerHUDCanvas = canvasTransform;
+            playerHUDCanvas.gameObject.SetActive(false);
+        }
 
         // Iniciar transición de la cámara
         if (playerCamera != null)
@@ -193,6 +202,13 @@ public class PCUIManager : MonoBehaviour
         if (playerController != null) playerController.enabled = true;
         if (cameraController != null) cameraController.enabled = true;
         
+        // Restaurar HUD del jugador
+        if (playerHUDCanvas != null)
+        {
+            playerHUDCanvas.gameObject.SetActive(true);
+            playerHUDCanvas = null;
+        }
+
         // Retraso para evitar interactuar en el mismo frame
         Invoke(nameof(ReenableInteraction), 0.1f);
     }
