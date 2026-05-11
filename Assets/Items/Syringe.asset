@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3661309814907646946af2393fc1fe6, type: 3}
+  m_Name: Syringe
+  m_EditorClassIdentifier: 
+  itemID: syringe_01
+  itemName: Adrenalyn Syringe
+  description: Injects adrenalyn and gives infinite stamina for 7 seconds.
+  price: 800
+  uiIcon: {fileID: 21300000, guid: 07c29cba82bc7054c848a297a2fda879, type: 3}
+  itemPrefab: {fileID: 6737015998343169934, guid: 1fcf85b8423bd7d49b4d260ac333a642,
+    type: 3}

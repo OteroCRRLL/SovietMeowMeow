@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public enum DroneState { Patrol, Locking, LostTarget, Kamikaze, Dead }
+public enum DroneState { Patrol, Locking, LostTarget, Kamikaze, Dead, Paralyzed }
 
 public class DroneBrain : MonoBehaviour
 {
@@ -27,6 +27,8 @@ public class DroneBrain : MonoBehaviour
     private Transform currentTarget;
     private Vector3 lastKnownTargetPos;
     private float stateTimer = 0f;
+    private float paralyzedTimer = 0f;
+    private DroneState preParalyzedState;
 
     private Vector3 currentPatrolPoint;
 
@@ -79,6 +81,37 @@ public class DroneBrain : MonoBehaviour
             case DroneState.Kamikaze:
                 UpdateKamikaze();
                 break;
+            case DroneState.Paralyzed:
+                UpdateParalyzed();
+                break;
+        }
+    }
+
+    public void Paralyze(float duration)
+    {
+        if (currentState == DroneState.Dead || currentState == DroneState.Kamikaze) return;
+
+        if (currentState != DroneState.Paralyzed)
+        {
+            preParalyzedState = currentState;
+            currentState = DroneState.Paralyzed;
+            
+            if (TryGetComponent<Rigidbody>(out Rigidbody rb))
+            {
+                rb.velocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+        }
+        
+        paralyzedTimer = duration;
+    }
+
+    private void UpdateParalyzed()
+    {
+        paralyzedTimer -= Time.deltaTime;
+        if (paralyzedTimer <= 0f)
+        {
+            currentState = preParalyzedState;
         }
     }
 

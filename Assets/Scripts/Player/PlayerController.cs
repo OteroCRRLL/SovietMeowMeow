@@ -44,6 +44,7 @@ public class PlayerController : MonoBehaviour
     public float staminaRegen = 15f;
     private bool isExhausted = false;
     private bool shiftMustBeReleased = false;
+    private bool hasInfiniteStamina = false;
 
     // The character controller component on the player
     private CharacterController controller;
@@ -136,7 +137,10 @@ public class PlayerController : MonoBehaviour
         if (isShiftPressed && isMoving && currentStamina > 0 && !isExhausted && !shiftMustBeReleased)
         {
             currentSpeed = runSpeed;
-            currentStamina -= staminaDrain * Time.deltaTime;
+            if (!hasInfiniteStamina)
+            {
+                currentStamina -= staminaDrain * Time.deltaTime;
+            }
 
             if (currentStamina <= 0)
             {
@@ -150,7 +154,14 @@ public class PlayerController : MonoBehaviour
             currentSpeed = moveSpeed;
             if (currentStamina < maxStamina)
             {
-                currentStamina += staminaRegen * Time.deltaTime;
+                if (!hasInfiniteStamina)
+                {
+                    currentStamina += staminaRegen * Time.deltaTime;
+                }
+                else
+                {
+                    currentStamina = maxStamina; // Recover instantly when infinite stamina is active
+                }
 
                 if (isExhausted && currentStamina > (maxStamina * 0.2f))
                 {
@@ -251,5 +262,22 @@ public class PlayerController : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    public void ApplyInfiniteStamina(float duration)
+    {
+        StartCoroutine(InfiniteStaminaCoroutine(duration));
+    }
+
+    private IEnumerator InfiniteStaminaCoroutine(float duration)
+    {
+        hasInfiniteStamina = true;
+        currentStamina = maxStamina;
+        isExhausted = false;
+        shiftMustBeReleased = false;
+        
+        yield return new WaitForSeconds(duration);
+        
+        hasInfiniteStamina = false;
     }
 }

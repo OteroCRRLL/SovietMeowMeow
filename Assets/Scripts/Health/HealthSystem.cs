@@ -43,6 +43,19 @@ public class HealthSystem : MonoBehaviour
         }
     }
 
+    public void Heal(float amount)
+    {
+        if (isDead) return;
+
+        currentHealth += amount;
+
+        if (currentHealth > maxHealth) currentHealth = maxHealth;
+
+        Debug.Log(gameObject.name + " se ha curado. Vida restante: " + currentHealth);
+
+        onHealthChanged?.Invoke(currentHealth / maxHealth);
+    }
+
     private void Die()
     {
         if (isDead) return;

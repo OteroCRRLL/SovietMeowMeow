@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-public enum SoldierState { Patrol, FollowLeader, Combat, HuntPlayer, Reloading, Dead }
+public enum SoldierState { Patrol, FollowLeader, Combat, HuntPlayer, Reloading, Dead, Paralyzed }
 
 public class SoldierBrain : MonoBehaviour
 {
@@ -40,6 +40,8 @@ public class SoldierBrain : MonoBehaviour
     private float reloadTimer = 0f;
     private float targetLostTimer = 0f;
     private float repositionTimer = 0f;
+    private float paralyzedTimer = 0f;
+    private SoldierState preParalyzedState;
 
     // Variables de patrulla
     private float waitTimer = 0f;
@@ -125,7 +127,13 @@ public class SoldierBrain : MonoBehaviour
 
         // === BEHAVIOR TREE (Árbol de Decisión) ===
         
-        // 1. Supervivencia: ¿Necesito recargar?
+        // 1. Supervivencia: ¿Necesito recargar o estoy paralizado?
+        if (currentState == SoldierState.Paralyzed)
+        {
+            UpdateParalyzed();
+            return; // Bloquea todo lo demás hasta terminar
+        }
+        
         if (currentState == SoldierState.Reloading)
         {
             UpdateReloading();
@@ -295,6 +303,43 @@ public class SoldierBrain : MonoBehaviour
             case SoldierState.HuntPlayer:
                 UpdateHuntPlayer();
                 break;
+            case SoldierState.Paralyzed:
+                UpdateParalyzed();
+                break;
+        }
+    }
+
+    public void Paralyze(float duration)
+    {
+        if (currentState == SoldierState.Dead) return;
+
+        if (currentState != SoldierState.Paralyzed)
+        {
+            preParalyzedState = currentState;
+            currentState = SoldierState.Paralyzed;
+            
+            if (agent != null && agent.isOnNavMesh)
+            {
+                agent.isStopped = true;
+                agent.velocity = Vector3.zero;
+            }
+            
+            controller.SetAnimation("Idle"); // Quedarse quieto
+        }
+        
+        paralyzedTimer = duration;
+    }
+
+    private void UpdateParalyzed()
+    {
+        paralyzedTimer -= Time.deltaTime;
+        if (paralyzedTimer <= 0f)
+        {
+            currentState = preParalyzedState;
+            if (agent != null && agent.isOnNavMesh)
+            {
+                agent.isStopped = false;
+            }
         }
     }
 

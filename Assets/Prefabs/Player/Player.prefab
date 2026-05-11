@@ -101,7 +101,7 @@ MonoBehaviour:
       m_Flags: 8
     m_Flags: 0
   runInput:
-    m_Name: 
+    m_Name: Run Input
     m_Type: 0
     m_ExpectedControlType: 
     m_Id: 8c361e7d-bd88-43ca-ae3d-74af0ab6ab54
@@ -1108,8 +1108,8 @@ Transform:
   m_GameObject: {fileID: 5273657442699793518}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.474, y: 0.707, z: 0.478}
-  m_LocalScale: {x: 0.20631894, y: 0.2, z: 0.47065}
+  m_LocalPosition: {x: -0.376, y: 0.707, z: 0.511}
+  m_LocalScale: {x: 0.70301, y: 0.70301, z: 0.70301}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7670533771857313855}

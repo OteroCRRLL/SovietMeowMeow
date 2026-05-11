@@ -207,4 +207,16 @@ public class PlayerEquipment : MonoBehaviour
             }
         }
     }
+
+    public void RemoveCurrentItem()
+    {
+        if (GameManager.instance != null)
+        {
+            // Vacia el slot en el GameManager
+            GameManager.instance.equippedItems[currentSlotIndex] = "";
+            GameManager.instance.SaveGame();
+        }
+        
+        RefreshEquipment();
+    }
 }
