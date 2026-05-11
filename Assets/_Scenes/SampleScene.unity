@@ -5321,6 +5321,8 @@ MonoBehaviour:
   hasStartedRecording: 0
   maxCapacity: 100
   currentCapacity: 100
+  recordingIndicatorUI: {fileID: 0}
+  blinkSpeed: 2
 --- !u!4 &1378150530
 Transform:
   m_ObjectHideFlags: 0
@@ -8184,7 +8186,11 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2965929000879004202, guid: 78e0609880e76324dbe44ca0cf9c9099,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 78e0609880e76324dbe44ca0cf9c9099, type: 3}
 --- !u!1001 &8328097856483948242
 PrefabInstance:
@@ -8252,7 +8258,11 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3621720918347104815, guid: bca21f5c6b5e7124d8ec6dcb4f76a3fa,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: bca21f5c6b5e7124d8ec6dcb4f76a3fa, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
