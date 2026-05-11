@@ -35,7 +35,7 @@ public class ShopAppManager : MonoBehaviour
 
         foreach (ItemData item in GameManager.instance.itemDatabase.allItems)
         {
-            GameObject newObj = Instantiate(shopItemPrefab, contentContainer);
+            GameObject newObj = Instantiate(shopItemPrefab, contentContainer, false);
             ShopItemUI uiScript = newObj.GetComponent<ShopItemUI>();
             if (uiScript != null)
             {

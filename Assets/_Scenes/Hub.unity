@@ -730,9 +730,9 @@ RectTransform:
   m_Father: {fileID: 1151312887}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -17, y: -17}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &288030409
 MonoBehaviour:
@@ -820,9 +820,9 @@ RectTransform:
   m_Father: {fileID: 1151312887}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 20, y: -17}
+  m_SizeDelta: {x: 20, y: 0}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &292604272
 MonoBehaviour:
@@ -2520,7 +2520,7 @@ GameObject:
   - component: {fileID: 924206182}
   - component: {fileID: 924206181}
   m_Layer: 12
-  m_Name: Text (TMP) (2)
+  m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3113,8 +3113,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 97483627}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.38999978}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -3168,7 +3168,7 @@ GameObject:
   - component: {fileID: 1023553597}
   - component: {fileID: 1023553596}
   m_Layer: 12
-  m_Name: Text (TMP) (1)
+  m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3438,9 +3438,9 @@ RectTransform:
   m_Father: {fileID: 1151312887}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -17, y: 20}
+  m_SizeDelta: {x: 0, y: 20}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &1077370675
 MonoBehaviour:
@@ -3823,9 +3823,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b12ab5660759ccb4494dc8e7af1a3ffb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  iconImage: {fileID: 728324460}
-  slotButton: {fileID: 0}
-  emptyTextObj: {fileID: 1219876164}
 --- !u!222 &1219876168
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4404,7 +4401,7 @@ MonoBehaviour:
     m_Right: 0
     m_Top: 0
     m_Bottom: 0
-  m_ChildAlignment: 0
+  m_ChildAlignment: 4
   m_Spacing: 0
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 1
@@ -4446,7 +4443,7 @@ RectTransform:
   m_Father: {fileID: 1046312892}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0.9999998, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -4569,7 +4566,7 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 1219876165}
+  m_TargetGraphic: {fileID: 1543228719}
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
@@ -4585,9 +4582,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b12ab5660759ccb4494dc8e7af1a3ffb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  iconImage: {fileID: 777594171}
-  slotButton: {fileID: 0}
-  emptyTextObj: {fileID: 1543228715}
 --- !u!114 &1543228719
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4809,9 +4803,9 @@ MonoBehaviour:
   m_Padding:
     m_Left: 0
     m_Right: 0
-    m_Top: 0
+    m_Top: 28
     m_Bottom: 0
-  m_ChildAlignment: 0
+  m_ChildAlignment: 1
   m_Spacing: 0
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 1
@@ -5061,6 +5055,7 @@ MonoBehaviour:
   appPanels:
   - {fileID: 2132085468}
   - {fileID: 238422731}
+  - {fileID: 1956093532}
   cameraTransitionSpeed: 5
 --- !u!224 &1789370680
 RectTransform:
@@ -5287,7 +5282,7 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 1219876165}
+  m_TargetGraphic: {fileID: 1896630404}
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
@@ -5303,9 +5298,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b12ab5660759ccb4494dc8e7af1a3ffb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  iconImage: {fileID: 1043047045}
-  slotButton: {fileID: 0}
-  emptyTextObj: {fileID: 1896630400}
 --- !u!114 &1896630404
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5487,7 +5479,6 @@ GameObject:
   - component: {fileID: 1956093533}
   - component: {fileID: 1956093537}
   - component: {fileID: 1956093536}
-  - component: {fileID: 1956093535}
   - component: {fileID: 1956093534}
   m_Layer: 12
   m_Name: InventoryAppPanel
@@ -5495,7 +5486,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1956093533
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5538,22 +5529,7 @@ MonoBehaviour:
   - {fileID: 1543228718}
   - {fileID: 1896630403}
   inventoryContentContainer: {fileID: 1461437921}
-  inventoryItemPrefab: {fileID: 0}
---- !u!114 &1956093535
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1956093532}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc68d211ad1028e42a4d1bc4e52a234c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moneyText: {fileID: 0}
-  contentContainer: {fileID: 0}
-  shopItemPrefab: {fileID: 9174650397665764909, guid: 75fdef5a42d98964b9e165c819e5c264,
+  inventoryItemPrefab: {fileID: 6208595745004422666, guid: 7ebb685cf7e4cff4c85a8012b7bbd05b,
     type: 3}
 --- !u!114 &1956093536
 MonoBehaviour:

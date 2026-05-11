@@ -4,13 +4,41 @@ using TMPro;
 
 public class InventorySlotUI : MonoBehaviour
 {
-    public Image iconImage;
-    public Button slotButton;
-    public GameObject emptyTextObj; // Un texto que diga "Vacio"
+    // Variables privadas para forzar que busque a los hijos y evitar errores del Inspector
+    private Image iconImage;
+    private GameObject emptyTextObj;
+    private Button slotButton;
 
     private int slotIndex;
     private InventoryAppManager manager;
     private bool isEmpty = true;
+
+    private void Awake()
+    {
+        // Obtenemos el botón de este mismo objeto (el marco)
+        slotButton = GetComponent<Button>();
+
+        // Buscamos obligatoriamente a los hijos por su nombre
+        Transform iconTransform = transform.Find("Icono");
+        if (iconTransform != null)
+        {
+            iconImage = iconTransform.GetComponent<Image>();
+        }
+        else
+        {
+            Debug.LogError("No se encontró un hijo llamado 'Icono' en " + gameObject.name);
+        }
+
+        Transform textTransform = transform.Find("Text (TMP)");
+        if (textTransform != null)
+        {
+            emptyTextObj = textTransform.gameObject;
+        }
+        else
+        {
+            Debug.LogError("No se encontró un hijo llamado 'Text (TMP)' en " + gameObject.name);
+        }
+    }
 
     public void SetupEmpty(int index, InventoryAppManager appManager)
     {
@@ -21,8 +49,11 @@ public class InventorySlotUI : MonoBehaviour
         if (iconImage != null) iconImage.gameObject.SetActive(false);
         if (emptyTextObj != null) emptyTextObj.SetActive(true);
 
-        slotButton.onClick.RemoveAllListeners();
-        slotButton.onClick.AddListener(OnSlotClicked);
+        if (slotButton != null)
+        {
+            slotButton.onClick.RemoveAllListeners();
+            slotButton.onClick.AddListener(OnSlotClicked);
+        }
     }
 
     public void Setup(ItemData item, int index, InventoryAppManager appManager)
@@ -38,8 +69,11 @@ public class InventorySlotUI : MonoBehaviour
         }
         if (emptyTextObj != null) emptyTextObj.SetActive(false);
 
-        slotButton.onClick.RemoveAllListeners();
-        slotButton.onClick.AddListener(OnSlotClicked);
+        if (slotButton != null)
+        {
+            slotButton.onClick.RemoveAllListeners();
+            slotButton.onClick.AddListener(OnSlotClicked);
+        }
     }
 
     private void OnSlotClicked()

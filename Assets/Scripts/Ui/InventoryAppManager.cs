@@ -81,7 +81,7 @@ public class InventoryAppManager : MonoBehaviour
                 ItemData item = GameManager.instance.itemDatabase.GetItemByID(kvp.Key);
                 if (item != null)
                 {
-                    GameObject newObj = Instantiate(inventoryItemPrefab, inventoryContentContainer);
+                    GameObject newObj = Instantiate(inventoryItemPrefab, inventoryContentContainer, false);
                     InventoryItemUI uiScript = newObj.GetComponent<InventoryItemUI>();
                     if (uiScript != null)
                     {
@@ -95,7 +95,7 @@ public class InventoryAppManager : MonoBehaviour
     public void SelectEquipmentSlot(int index)
     {
         selectedEquipmentSlot = index;
-        Debug.Log("Slot seleccionado para equipar: " + (index + 1));
+        Debug.Log("Has hecho click en el slot que el Inspector considera que es el: " + (index + 1) + " (Índice interno: " + index + ").");
         // Aquí podrías añadir lógica visual para destacar el slot seleccionado
     }
 
@@ -106,6 +106,11 @@ public class InventoryAppManager : MonoBehaviour
             GameManager.instance.equippedItems[selectedEquipmentSlot] = item.itemID;
             GameManager.instance.SaveGame(); // Guardar el nuevo equipamiento
             RefreshUI();
+            
+            // Avisar al jugador para que actualice su HUD y modelo 3D en tiempo real
+            PlayerEquipment playerEq = FindObjectOfType<PlayerEquipment>();
+            if (playerEq != null) playerEq.RefreshEquipment();
+
             selectedEquipmentSlot = -1; // Deseleccionar
         }
         else
@@ -121,6 +126,10 @@ public class InventoryAppManager : MonoBehaviour
             GameManager.instance.equippedItems[slotIndex] = "";
             GameManager.instance.SaveGame();
             RefreshUI();
+            
+            // Avisar al jugador para que actualice su HUD y modelo 3D en tiempo real
+            PlayerEquipment playerEq = FindObjectOfType<PlayerEquipment>();
+            if (playerEq != null) playerEq.RefreshEquipment();
         }
     }
 }
