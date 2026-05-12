@@ -46,6 +46,13 @@ public class PlayerController : MonoBehaviour
     private bool shiftMustBeReleased = false;
     private bool hasInfiniteStamina = false;
 
+    [Header("Adrenaline Effects")]
+    public Camera playerCamera;
+    public UnityEngine.Rendering.Volume adrenalineVolume;
+    public float normalFOV = 60f;
+    public float adrenalineFOV = 80f;
+    public float fovTransitionSpeed = 5f;
+
     // The character controller component on the player
     private CharacterController controller;
 
@@ -111,6 +118,22 @@ public class PlayerController : MonoBehaviour
     {
         ProcessMovement();
         ProcessHorizontalRotation();
+        ProcessAdrenalineEffects();
+    }
+
+    void ProcessAdrenalineEffects()
+    {
+        if (playerCamera != null)
+        {
+            float targetFOV = hasInfiniteStamina ? adrenalineFOV : normalFOV;
+            playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, targetFOV, Time.deltaTime * fovTransitionSpeed);
+        }
+
+        if (adrenalineVolume != null)
+        {
+            float targetWeight = hasInfiniteStamina ? 1f : 0f;
+            adrenalineVolume.weight = Mathf.Lerp(adrenalineVolume.weight, targetWeight, Time.deltaTime * fovTransitionSpeed);
+        }
     }
 
     /// <summary>

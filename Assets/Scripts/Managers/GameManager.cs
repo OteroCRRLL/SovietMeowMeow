@@ -321,6 +321,11 @@ public class GameManager : MonoBehaviour
             pauseMenuUI.SetActive(true); // Muestra el menú de pausa
         }
 
+        if (LevelAnnouncer.instance != null)
+        {
+            LevelAnnouncer.instance.HideAnnouncement();
+        }
+
         // Habilitar el cursor para poder usar los botones del UI
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;

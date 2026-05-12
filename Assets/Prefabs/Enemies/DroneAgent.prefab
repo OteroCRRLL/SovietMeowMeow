@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2915266615406932111}
   - component: {fileID: 188384035072337367}
   - component: {fileID: 2557626139521657156}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: wing1 (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -123,7 +123,7 @@ GameObject:
   - component: {fileID: 1700052124764113227}
   - component: {fileID: 8996116381114950494}
   - component: {fileID: 5706314753979994997}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: DroneAgent
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -301,7 +301,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7918797973693994812}
   - component: {fileID: 4068939671687636717}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Sensor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -352,7 +352,7 @@ GameObject:
   - component: {fileID: 5623813059265454389}
   - component: {fileID: 253357976980280948}
   - component: {fileID: 5373106322172770837}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: wing1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -459,7 +459,7 @@ GameObject:
   - component: {fileID: 8853088026814434761}
   - component: {fileID: 5499367144297919728}
   - component: {fileID: 9003986179670341739}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: wing1 (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -566,7 +566,7 @@ GameObject:
   - component: {fileID: 7367068091714114937}
   - component: {fileID: 3918475727954553731}
   - component: {fileID: 8007431940312779692}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: wing1 (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

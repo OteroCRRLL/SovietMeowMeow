@@ -322,6 +322,8 @@ public class DroneBrain : MonoBehaviour
 
         // Daño en área (Explosión)
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, explosionRadius);
+        System.Collections.Generic.HashSet<HealthSystem> damagedTargets = new System.Collections.Generic.HashSet<HealthSystem>();
+
         foreach (Collider hit in hitColliders)
         {
             FactionIdentity hitFaction = hit.GetComponentInParent<FactionIdentity>();
@@ -330,9 +332,10 @@ public class DroneBrain : MonoBehaviour
             if (hitFaction != null && myFaction != null && !myFaction.IsEnemy(hitFaction.myFaction)) continue;
 
             HealthSystem targetHealth = hit.GetComponentInParent<HealthSystem>();
-            if (targetHealth != null && !targetHealth.IsDead)
+            if (targetHealth != null && !targetHealth.IsDead && !damagedTargets.Contains(targetHealth))
             {
                 targetHealth.TakeDamage(explosionDamage);
+                damagedTargets.Add(targetHealth);
             }
         }
 

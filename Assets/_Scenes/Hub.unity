@@ -96,8 +96,10 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 0}
-  m_LightingSettings: {fileID: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: 0981341bde6b74840a5be16ad50508d9,
+    type: 2}
+  m_LightingSettings: {fileID: 4890085278179872738, guid: 4f96b787b01f15243bdbcc65256a48cf,
+    type: 2}
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -539,6 +541,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1117770233414647438, guid: 309a5599636ab114580710b48ae3fd73,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 966.0941
+      objectReference: {fileID: 0}
+    - target: {fileID: 1117770233414647438, guid: 309a5599636ab114580710b48ae3fd73,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 10.2017
+      objectReference: {fileID: 0}
+    - target: {fileID: 1117770233414647438, guid: 309a5599636ab114580710b48ae3fd73,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 602
+      objectReference: {fileID: 0}
     - target: {fileID: 1655676095637239197, guid: 309a5599636ab114580710b48ae3fd73,
         type: 3}
       propertyPath: currentMoney
@@ -550,6 +567,21 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: c484d4c1c7d94ba4a9623c41013bd1a5,
         type: 2}
+    - target: {fileID: 3175642107532855419, guid: 309a5599636ab114580710b48ae3fd73,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5784269783375773600, guid: 309a5599636ab114580710b48ae3fd73,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 925.8378
+      objectReference: {fileID: 0}
+    - target: {fileID: 5784269783375773600, guid: 309a5599636ab114580710b48ae3fd73,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -1.677
+      objectReference: {fileID: 0}
     - target: {fileID: 5906492963586747536, guid: 309a5599636ab114580710b48ae3fd73,
         type: 3}
       propertyPath: m_Name

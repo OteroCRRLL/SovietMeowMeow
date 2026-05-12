@@ -128,4 +128,18 @@ public class LevelAnnouncer : MonoBehaviour
 
         canvasGroup.alpha = 0f;
     }
+
+    public void HideAnnouncement()
+    {
+        if (fadeCoroutine != null)
+        {
+            StopCoroutine(fadeCoroutine);
+            fadeCoroutine = null;
+        }
+
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = 0f;
+        }
+    }
 }

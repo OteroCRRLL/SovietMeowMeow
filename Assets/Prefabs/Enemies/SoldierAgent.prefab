@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1349021145391235167}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: VisionPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -43,7 +43,7 @@ GameObject:
   - component: {fileID: 2110692488818234363}
   - component: {fileID: 1798724748103136320}
   - component: {fileID: 6997544984787988744}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: StateDisplay
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -239,7 +239,7 @@ GameObject:
   - component: {fileID: 4554391080449358846}
   - component: {fileID: 8993837954757586420}
   - component: {fileID: 8576156894408073822}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: SoldierAgent
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -424,7 +424,7 @@ GameObject:
   - component: {fileID: 4838623000985943904}
   - component: {fileID: 2926924905939638355}
   - component: {fileID: 3782369019799384901}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}

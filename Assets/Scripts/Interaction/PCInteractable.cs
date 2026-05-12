@@ -26,6 +26,12 @@ public class PCInteractable : MonoBehaviour, IInteractable
                 {
                     uiText.gameObject.SetActive(false);
                 }
+
+                // Ocultar el cartel del día inmediatamente
+                if (LevelAnnouncer.instance != null)
+                {
+                    LevelAnnouncer.instance.HideAnnouncement();
+                }
                 
                 pcUIManager.OpenPC(interactor, pcCameraTransform);
             }

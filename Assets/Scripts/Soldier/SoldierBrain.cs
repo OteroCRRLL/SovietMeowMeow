@@ -425,6 +425,15 @@ public class SoldierBrain : MonoBehaviour
         Vector2 randomCircle = Random.insideUnitCircle.normalized * Random.Range(10f, patrolRadius);
         Vector3 randomDirection = new Vector3(randomCircle.x, 0, randomCircle.y) + transform.position;
         
+        // "Gravedad" hacia el centro del mapa para un movimiento más orgánico hacia el interior
+        if (DayDirector.instance != null && DayDirector.instance.mapCenterPoint != null)
+        {
+            Vector3 centerDir = (DayDirector.instance.mapCenterPoint.position - transform.position).normalized;
+            centerDir.y = 0;
+            // Damos un empuje constante hacia el centro equivalente a un 40% del radio
+            randomDirection += centerDir * (patrolRadius * 0.4f);
+        }
+        
         NavMeshHit hit;
         if (NavMesh.SamplePosition(randomDirection, out hit, patrolRadius, NavMesh.AllAreas))
         {

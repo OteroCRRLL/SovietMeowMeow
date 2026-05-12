@@ -557,6 +557,55 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &2782023584287701168
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8046798009481660646}
+  - component: {fileID: 2081202287852020246}
+  m_Layer: 6
+  m_Name: AdrenalineVolume
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8046798009481660646
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2782023584287701168}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7670533771857313855}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2081202287852020246
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2782023584287701168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IsGlobal: 1
+  priority: 0
+  blendDistance: 0
+  weight: 0
+  sharedProfile: {fileID: 11400000, guid: 5eb45334d4329bc4b9b50cc29d91a4d1, type: 2}
 --- !u!1 &4033397785806520246
 GameObject:
   m_ObjectHideFlags: 0
@@ -675,7 +724,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -748,7 +797,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abec5a9133332184198c6828e87d4309, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rayDistance: 50
+  rayDistance: 150
   pointsPerTarget: 100
   targetTags:
   - Enemy
@@ -1383,6 +1432,7 @@ Transform:
   - {fileID: 9139988734588938931}
   - {fileID: 4050525858135641175}
   - {fileID: 5109856154540009895}
+  - {fileID: 8046798009481660646}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &382160645683837021
@@ -1643,6 +1693,11 @@ MonoBehaviour:
   currentStamina: 100
   staminaDrain: 20
   staminaRegen: 15
+  playerCamera: {fileID: 4294479958659150734}
+  adrenalineVolume: {fileID: 2081202287852020246}
+  normalFOV: 60
+  adrenalineFOV: 80
+  fovTransitionSpeed: 5
 --- !u!114 &9005352976880008176
 MonoBehaviour:
   m_ObjectHideFlags: 0
