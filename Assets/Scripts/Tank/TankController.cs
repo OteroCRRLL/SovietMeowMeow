@@ -92,22 +92,5 @@ public class TankController : MonoBehaviour
         Debug.Log("Tank fired");
     }
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        // Si atropellamos al jugador, muere instantáneamente
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            HealthSystem health = collision.gameObject.GetComponent<HealthSystem>();
-            if (health == null)
-            {
-                health = collision.gameObject.GetComponentInParent<HealthSystem>();
-            }
 
-            if (health != null)
-            {
-                Debug.Log("¡El tanque ha atropellado al jugador! Muerte instantánea.");
-                health.TakeDamage(9999f); // Daño letal masivo
-            }
-        }
-    }
 }
