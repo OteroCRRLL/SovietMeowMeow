@@ -48,7 +48,8 @@ public class CameraScoring : MonoBehaviour
 
         foreach (Collider col in colliders)
         {
-            if (targetTags.Contains(col.tag))
+            FactionIdentity faction = col.GetComponentInParent<FactionIdentity>();
+            if (faction != null && faction.myFaction != FactionType.Player) // Solo enemigos o neutrales, no el jugador
             {
                 Vector3 targetPos = col.bounds.center;
                 Vector3 viewportPos = mainCamera.WorldToViewportPoint(targetPos);
@@ -62,9 +63,30 @@ public class CameraScoring : MonoBehaviour
 
                     if (Physics.Raycast(transform.position, dirToTarget.normalized, out RaycastHit hit, distanceToTarget, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
                     {
-                        if (hit.collider == col || hit.transform.root == col.transform.root)
+                        if (hit.transform.root == col.transform.root)
                         {
                             currentlyVisible.Add(col.gameObject);
+                        }
+                        else
+                        {
+                            // A veces el raycast golpea la propia cámara o al jugador si la cámara está dentro de su collider
+                            if (hit.transform.root == transform.root)
+                            {
+                                // Lanzamos otro raycast ignorando al jugador
+                                RaycastHit[] hits = Physics.RaycastAll(transform.position, dirToTarget.normalized, distanceToTarget, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+                                System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+                                
+                                foreach (RaycastHit h in hits)
+                                {
+                                    if (h.transform.root == transform.root) continue;
+                                    
+                                    if (h.transform.root == col.transform.root)
+                                    {
+                                        currentlyVisible.Add(col.gameObject);
+                                    }
+                                    break; // El primer objeto que no seamos nosotros determinará si hay visión o no
+                                }
+                            }
                         }
                     }
                     else

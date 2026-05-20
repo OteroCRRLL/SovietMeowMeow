@@ -650,12 +650,12 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.0317978, y: 1, z: 0.8964835}
-  m_Center: {x: 0.06925816, y: 0, z: 0.0036086163}
+  m_Size: {x: 0.94156045, y: 1, z: 0.8964835}
+  m_Center: {x: 0.024139496, y: 0, z: 0.003608613}
 --- !u!114 &442893013182766369
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -948,8 +948,8 @@ MonoBehaviour:
     type: 3}
   anim: {fileID: 3332292006229466282}
   rotationSpeed: 5
-  bulletForce: 3000
-  spreadAngle: 3
+  bulletForce: 5000
+  spreadAngle: 1
 --- !u!54 &7670142052676987337
 Rigidbody:
   m_ObjectHideFlags: 0

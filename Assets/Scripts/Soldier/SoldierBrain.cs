@@ -724,8 +724,14 @@ public class SoldierBrain : MonoBehaviour
             squadManager.RemoveMember(this);
         }
         
-        // Destruimos el cadáver pasados 10 segundos para limpiar la escena
-        Destroy(gameObject, 10f);
+        // En lugar de destruir, desactivamos el cadáver para no perder el script y el replay manager guarde el estado
+        StartCoroutine(DeactivateAfterDelay(10f));
+    }
+
+    private System.Collections.IEnumerator DeactivateAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        gameObject.SetActive(false);
     }
 
     private void OnDestroy()

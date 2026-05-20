@@ -20,21 +20,27 @@ public class ReplayObject : MonoBehaviour
     [Header("Animations to record")]
     public string[] boolParams;
 
-    private List<ReplayFrame> frames = new List<ReplayFrame>();
+    private ReplaySessionData sessionData;
     private bool isRecording = false;
     private bool isReplaying = false;
     private float timeTimer = 0;
-    private int playbackIndex = 0;
+    
+    // Timer para la reproducción de los clones
+    private float replayPlaybackTime = 0f;
+    private int currentFrameIndex = 0;
 
-    private float spawnOffset = 0f; 
-    private float replayGlobalTimer = 0f;
-    private bool isWaitingToSpawn = false;
+    private void Start()
+    {
+        if (ReplayManager.instance != null && !isReplaying)
+        {
+            ReplayManager.instance.RegisterObject(this);
+        }
+    }
 
     private void Update()
     {
         if (isRecording)
         {
-            // Only record each interval
             timeTimer += Time.deltaTime;
             if (timeTimer >= recordInterval)
             {
@@ -42,48 +48,63 @@ public class ReplayObject : MonoBehaviour
                 timeTimer = 0;
             }
         }
-        else if (isReplaying)
+        else if (isReplaying && sessionData != null && sessionData.frames.Count > 0)
         {
-          
-            replayGlobalTimer += Time.deltaTime;
+            replayPlaybackTime += Time.deltaTime;
 
-        
-            if (replayGlobalTimer < spawnOffset)
+            // Esperar al momento en que spawneó
+            if (replayPlaybackTime < sessionData.spawnOffset)
             {
-                if (!isWaitingToSpawn)
+                ToggleVisuals(false);
+                return;
+            }
+
+            // Ocultar si ya se destruyó
+            if (sessionData.destroyTime != -1f && replayPlaybackTime >= sessionData.destroyTime)
+            {
+                ToggleVisuals(false);
+                return;
+            }
+
+            ToggleVisuals(true);
+
+            // Buscar los dos frames entre los que estamos
+            while (currentFrameIndex < sessionData.frames.Count - 2 && 
+                   sessionData.frames[currentFrameIndex + 1].frameTime < replayPlaybackTime)
+            {
+                currentFrameIndex++;
+            }
+
+            if (currentFrameIndex < sessionData.frames.Count - 1)
+            {
+                ReplayFrame frameA = sessionData.frames[currentFrameIndex];
+                ReplayFrame frameB = sessionData.frames[currentFrameIndex + 1];
+
+                float timeDiff = frameB.frameTime - frameA.frameTime;
+                float percent = 0f;
+                if (timeDiff > 0.0001f)
                 {
-                    ToggleVisuals(false);
-                    isWaitingToSpawn = true;
+                    percent = (replayPlaybackTime - frameA.frameTime) / timeDiff;
                 }
-                return; 
-            }
 
-           
-            if (isWaitingToSpawn)
-            {
-                ToggleVisuals(true); 
-                isWaitingToSpawn = false;
+                ApplyFrameInterpolated(frameA, frameB, Mathf.Clamp01(percent));
             }
-
-           
-            timeTimer += Time.deltaTime;
-            if (timeTimer >= recordInterval)
+            else
             {
-                playbackIndex++;
-                timeTimer = 0;
-            }
-
-            if (playbackIndex < frames.Count - 1)
-            {
-                float lerpPercent = timeTimer / recordInterval;
-                ApplyFrameInterpolated(frames[playbackIndex], frames[playbackIndex + 1], lerpPercent);
+                // Mantenemos el último frame
+                ApplyFrameInterpolated(sessionData.frames[sessionData.frames.Count - 1], sessionData.frames[sessionData.frames.Count - 1], 1f);
             }
         }
     }
 
     void RecordFrame()
     {
+        if (sessionData == null) return;
+
         ReplayFrame f = new ReplayFrame();
+
+        // Guardamos el tiempo real de la grabación (saltando pausas)
+        f.frameTime = ReplayManager.instance.currentRecordedTime;
 
         // 1. Transform
         f.position = transform.position;
@@ -107,7 +128,6 @@ public class ReplayObject : MonoBehaviour
         {
             f.isAnimEnabled = anim.enabled;
 
-            // Save bools
             f.boolValues = new bool[boolParams.Length];
             for (int i = 0; i < boolParams.Length; i++)
             {
@@ -115,60 +135,70 @@ public class ReplayObject : MonoBehaviour
             }
         }
 
-        frames.Add(f);
+        sessionData.frames.Add(f);
     }
 
-    // Reproduce
     void ApplyFrameInterpolated(ReplayFrame frameA, ReplayFrame frameB, float percent)
     {
-        // 1. Smooth transform
-        transform.position = Vector3.Lerp(frameA.position, frameB.position, percent);
+        Vector3 offset = Vector3.zero;
+        if (ReplayManager.instance != null)
+        {
+            offset = ReplayManager.instance.replayOffset;
+        }
+
+        transform.position = offset + Vector3.Lerp(frameA.position, frameB.position, percent);
         transform.rotation = Quaternion.Slerp(frameA.rotation, frameB.rotation, percent);
 
-        // 2. Extras
         if (frameA.extraRotations != null && extraTransforms.Length > 0)
         {
             for (int i = 0; i < extraTransforms.Length; i++)
             {
-                if (extraTransforms[i] != null)
+                if (extraTransforms[i] != null && i < frameB.extraRotations.Length)
                 {
                     extraTransforms[i].localRotation = Quaternion.Slerp(frameA.extraRotations[i], frameB.extraRotations[i], percent);
                 }
             }
         }
 
-        // 3. Animations
         if (anim != null)
         {
-            anim.enabled = frameA.isAnimEnabled; // Turns On/off animator
+            anim.enabled = frameA.isAnimEnabled;
 
-            for (int i = 0; i < boolParams.Length; i++)
+            if (frameA.boolValues != null)
             {
-                anim.SetBool(boolParams[i], frameA.boolValues[i]);
+                for (int i = 0; i < boolParams.Length; i++)
+                {
+                    if (i < frameA.boolValues.Length)
+                    {
+                        anim.SetBool(boolParams[i], frameA.boolValues[i]);
+                    }
+                }
             }
         }
     }
 
-  
     void ToggleVisuals(bool state)
     {
-        // Renderers
         Renderer[] renderers = GetComponentsInChildren<Renderer>();
         foreach (var r in renderers) r.enabled = state;
 
-        // UI Canvas
         Canvas[] canvases = GetComponentsInChildren<Canvas>();
         foreach (var c in canvases) c.enabled = state;
 
-        // Animador 
         if (anim != null) anim.enabled = state;
     }
 
-    // Controls
+    // Controls for Recording
     public void StartRecording(float offset = 0f)
     {
-        frames.Clear();
-        spawnOffset = offset; 
+        sessionData = new ReplaySessionData();
+        
+        // Tratar de limpiar el nombre de "(Clone)"
+        sessionData.prefabName = gameObject.name.Replace("(Clone)", "").Trim();
+        sessionData.objectTag = gameObject.tag;
+        sessionData.spawnOffset = offset;
+        sessionData.isPlayer = gameObject.CompareTag("Player");
+
         isRecording = true;
         isReplaying = false;
         timeTimer = 0;
@@ -187,23 +217,60 @@ public class ReplayObject : MonoBehaviour
     public void StopRecording()
     {
         isRecording = false;
+        
+        // Guardar los datos en el ReplayManager
+        if (sessionData != null && sessionData.frames.Count > 0)
+        {
+            if (ReplayManager.instance != null)
+            {
+                ReplayManager.instance.SaveSessionData(sessionData);
+            }
+        }
+    }
+
+    // Llamar cuando el objeto muere pero no debe destruirse todavía para el replay
+    public void RecordDeath()
+    {
+        if (isRecording && sessionData != null)
+        {
+            sessionData.destroyTime = ReplayManager.instance.currentRecordedTime;
+            StopRecording();
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (isRecording)
+        {
+            RecordDeath();
+        }
+    }
+    
+    private void OnDestroy()
+    {
+        if (isRecording)
+        {
+            RecordDeath();
+        }
+    }
+
+    // Controls for Replay (clones)
+    public void SetupForReplay(ReplaySessionData data)
+    {
+        sessionData = data;
     }
 
     public void StartReplay()
     {
         isRecording = false;
         isReplaying = true;
-        playbackIndex = 0;
-        timeTimer = 0;
+        currentFrameIndex = 0;
+        replayPlaybackTime = 0f;
 
-        replayGlobalTimer = 0;
-        isWaitingToSpawn = false;
-
-        // Disable physics/navmesh
         if (rb) rb.isKinematic = true;
         if (agent) agent.enabled = false;
 
-        // Disable control scripts
+        // Desactivar scripts de control para que no interfieran en el replay
         MonoBehaviour[] scripts = GetComponents<MonoBehaviour>();
         foreach (var script in scripts)
         {
@@ -212,41 +279,23 @@ public class ReplayObject : MonoBehaviour
                 script.enabled = false;
             }
         }
+        
+        // Desactivar colisiones si las hay
+        Collider[] colliders = GetComponentsInChildren<Collider>();
+        foreach(var col in colliders)
+        {
+            col.enabled = false;
+        }
 
-  
-        if (spawnOffset > 0)
+        if (sessionData != null && sessionData.spawnOffset > 0)
         {
             ToggleVisuals(false);
-            isWaitingToSpawn = true;
         }
-    }
 
-    public void StopReplay()
-    {
-        isReplaying = false;
-        isWaitingToSpawn = false;
-
-  
-        ToggleVisuals(true);
-
-        if (rb) rb.isKinematic = false;
-        if (agent) agent.enabled = true;
-
-        // Reactivate control scripts
-        MonoBehaviour[] scripts = GetComponents<MonoBehaviour>();
-        foreach (var script in scripts)
+        AudioListener listener = GetComponentInChildren<AudioListener>();
+        if (listener != null)
         {
-            if (script != this)
-            {
-                script.enabled = true;
-            }
-        }
-    }
-    private void Start()
-    {
-        if (ReplayManager.instance != null)
-        {
-            ReplayManager.instance.RegisterObject(this);
+            listener.enabled = false;
         }
     }
 }

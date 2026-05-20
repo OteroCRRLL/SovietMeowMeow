@@ -253,7 +253,13 @@ public class TankBrain : MonoBehaviour
         
         // Destruimos el tanque después de un tiempo para que el cadáver no se quede para siempre
         // También puedes poner aquí instanciar una explosión visual o un modelo de tanque destruido
-        Destroy(gameObject, 15f);
+        StartCoroutine(DeactivateAfterDelay(15f));
+    }
+
+    private System.Collections.IEnumerator DeactivateAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        gameObject.SetActive(false);
     }
 
     private void OnDestroy()

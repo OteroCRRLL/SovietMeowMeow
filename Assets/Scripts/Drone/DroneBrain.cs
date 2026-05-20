@@ -339,8 +339,8 @@ public class DroneBrain : MonoBehaviour
             }
         }
 
-        // Destruimos el objeto del dron al explotar
-        Destroy(gameObject);
+        // Desactivamos el objeto del dron al explotar
+        gameObject.SetActive(false);
     }
 
     private void OnDrawGizmosSelected()
