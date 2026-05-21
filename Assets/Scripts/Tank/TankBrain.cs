@@ -18,6 +18,12 @@ public class TankBrain : MonoBehaviour
     public float targetLossGraceTime = 0.5f; //Time to wait before continue patrolling
     public float shootDuration = 0.5f; // Tiempo que el tanque se queda en estado 'Shoot' tras disparar
 
+    [Header("Audio")]
+    public AudioSource tankAudioSource;
+    public AudioClip tankClip;
+    public float tankLoopStartTime = 21f;
+    public float tankLoopEndTime = 35f;
+
 
     private TankState currentState = TankState.Patrol;
     public TankState CurrentState => currentState;
@@ -31,6 +37,9 @@ public class TankBrain : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        if (tankAudioSource == null) tankAudioSource = GetComponent<AudioSource>();
+        if (tankAudioSource == null) tankAudioSource = gameObject.AddComponent<AudioSource>();
+
         // Evitar que el tanque salga volando por los aires al recibir disparos físicos
         Rigidbody[] rbs = GetComponentsInChildren<Rigidbody>();
         foreach (Rigidbody rb in rbs)
@@ -62,11 +71,15 @@ public class TankBrain : MonoBehaviour
         {
             health.onDeath.AddListener(HandleDeath);
         }
+
+        StartTankAudio();
     }
 
     // Update is called once per frame
     void Update()
     {
+        UpdateTankAudio();
+
         if (currentState == TankState.Dead) return;
 
         switch (currentState)
@@ -83,6 +96,39 @@ public class TankBrain : MonoBehaviour
                 Debug.Log("TankState: Shoot");
                 UpdateShoot();
                 break;
+        }
+    }
+
+    private void StartTankAudio()
+    {
+        if (tankAudioSource == null || tankClip == null) return;
+
+        tankAudioSource.clip = tankClip;
+        tankAudioSource.loop = true;
+        tankAudioSource.time = Mathf.Clamp(tankLoopStartTime, 0f, Mathf.Max(0f, tankClip.length - 0.01f));
+        tankAudioSource.Play();
+    }
+
+    private void UpdateTankAudio()
+    {
+        if (tankAudioSource == null || tankClip == null) return;
+
+        if (currentState == TankState.Dead)
+        {
+            if (tankAudioSource.isPlaying) tankAudioSource.Stop();
+            return;
+        }
+
+        if (!tankAudioSource.isPlaying)
+        {
+            StartTankAudio();
+        }
+
+        float loopStart = Mathf.Clamp(tankLoopStartTime, 0f, Mathf.Max(0f, tankClip.length - 0.01f));
+        float loopEnd = Mathf.Clamp(tankLoopEndTime, loopStart, tankClip.length);
+        if (tankAudioSource.time >= loopEnd)
+        {
+            tankAudioSource.time = loopStart;
         }
     }
 
@@ -240,6 +286,8 @@ public class TankBrain : MonoBehaviour
     private void HandleDeath()
     {
         currentState = TankState.Dead;
+
+        if (tankAudioSource != null) tankAudioSource.Stop();
         
         if (agent != null && agent.isOnNavMesh)
         {
@@ -260,6 +308,11 @@ public class TankBrain : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         gameObject.SetActive(false);
+    }
+
+    private void OnDisable()
+    {
+        if (tankAudioSource != null) tankAudioSource.Stop();
     }
 
     private void OnDestroy()

@@ -25,10 +25,14 @@ public class MainMenuManager : MonoBehaviour
     public void NewGame()
     {
         SaveManager.DeleteSave();
-        
+
         if (GameManager.instance != null)
         {
             GameManager.instance.ResetProgress();
+        }
+        else if (ReplayManager.instance != null)
+        {
+            ReplayManager.instance.ClearAllReplayData();
         }
         
         if (SceneController.instance != null)

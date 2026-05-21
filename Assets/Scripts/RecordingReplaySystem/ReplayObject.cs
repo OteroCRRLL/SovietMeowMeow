@@ -17,17 +17,18 @@ public class ReplayObject : MonoBehaviour
 
     public Transform[] extraTransforms;
 
-    [Header("Animations to record")]
+    [Header("Legacy bool params (opcional, el Animator se captura automáticamente)")]
     public string[] boolParams;
 
     private ReplaySessionData sessionData;
     private bool isRecording = false;
     private bool isReplaying = false;
-    private float timeTimer = 0;
-    
-    // Timer para la reproducción de los clones
+    private float timeTimer = 0f;
     private float replayPlaybackTime = 0f;
     private int currentFrameIndex = 0;
+    private int nextAudioEventIndex = 0;
+    private AudioSource replayAudioSource;
+    private readonly Dictionary<string, AudioClip> audioClipCache = new Dictionary<string, AudioClip>();
 
     private void Start()
     {
@@ -39,199 +40,290 @@ public class ReplayObject : MonoBehaviour
 
     private void Update()
     {
+        if (!isActiveAndEnabled || !gameObject) return;
+
         if (isRecording)
         {
             timeTimer += Time.deltaTime;
             if (timeTimer >= recordInterval)
             {
                 RecordFrame();
-                timeTimer = 0;
+                timeTimer = 0f;
             }
+            return;
         }
-        else if (isReplaying && sessionData != null && sessionData.frames.Count > 0)
+
+        if (!isReplaying || sessionData == null || sessionData.frames == null || sessionData.frames.Count == 0)
         {
-            replayPlaybackTime += Time.deltaTime;
+            return;
+        }
 
-            // Esperar al momento en que spawneó
-            if (replayPlaybackTime < sessionData.spawnOffset)
-            {
-                ToggleVisuals(false);
-                return;
-            }
+        replayPlaybackTime += Time.deltaTime;
+        ProcessAudioEvents();
 
-            // Ocultar si ya se destruyó
-            if (sessionData.destroyTime != -1f && replayPlaybackTime >= sessionData.destroyTime)
-            {
-                ToggleVisuals(false);
-                return;
-            }
+        if (replayPlaybackTime < sessionData.spawnOffset)
+        {
+            SetRenderersEnabled(false);
+            return;
+        }
 
-            ToggleVisuals(true);
+        if (sessionData.destroyTime != -1f && replayPlaybackTime >= sessionData.destroyTime)
+        {
+            SetRenderersEnabled(false);
+            return;
+        }
 
-            // Buscar los dos frames entre los que estamos
-            while (currentFrameIndex < sessionData.frames.Count - 2 && 
-                   sessionData.frames[currentFrameIndex + 1].frameTime < replayPlaybackTime)
-            {
-                currentFrameIndex++;
-            }
+        SetRenderersEnabled(true);
 
-            if (currentFrameIndex < sessionData.frames.Count - 1)
-            {
-                ReplayFrame frameA = sessionData.frames[currentFrameIndex];
-                ReplayFrame frameB = sessionData.frames[currentFrameIndex + 1];
+        while (currentFrameIndex < sessionData.frames.Count - 2 &&
+               sessionData.frames[currentFrameIndex + 1].frameTime < replayPlaybackTime)
+        {
+            currentFrameIndex++;
+        }
 
-                float timeDiff = frameB.frameTime - frameA.frameTime;
-                float percent = 0f;
-                if (timeDiff > 0.0001f)
-                {
-                    percent = (replayPlaybackTime - frameA.frameTime) / timeDiff;
-                }
-
-                ApplyFrameInterpolated(frameA, frameB, Mathf.Clamp01(percent));
-            }
-            else
-            {
-                // Mantenemos el último frame
-                ApplyFrameInterpolated(sessionData.frames[sessionData.frames.Count - 1], sessionData.frames[sessionData.frames.Count - 1], 1f);
-            }
+        if (currentFrameIndex < sessionData.frames.Count - 1)
+        {
+            ReplayFrame frameA = sessionData.frames[currentFrameIndex];
+            ReplayFrame frameB = sessionData.frames[currentFrameIndex + 1];
+            float timeDiff = frameB.frameTime - frameA.frameTime;
+            float percent = timeDiff > 0.0001f
+                ? Mathf.Clamp01((replayPlaybackTime - frameA.frameTime) / timeDiff)
+                : 0f;
+            ApplyFrameInterpolated(frameA, frameB, percent);
+        }
+        else
+        {
+            ReplayFrame lastFrame = sessionData.frames[sessionData.frames.Count - 1];
+            ApplyFrameInterpolated(lastFrame, lastFrame, 1f);
         }
     }
 
     void RecordFrame()
     {
-        if (sessionData == null) return;
+        if (sessionData == null || ReplayManager.instance == null) return;
 
-        ReplayFrame f = new ReplayFrame();
-
-        // Guardamos el tiempo real de la grabación (saltando pausas)
-        f.frameTime = ReplayManager.instance.currentRecordedTime;
-
-        // 1. Transform
-        f.position = transform.position;
-        f.rotation = transform.rotation;
-
-        // 2. Extras
-        if (extraTransforms.Length > 0)
+        ReplayFrame frame = new ReplayFrame
         {
-            f.extraRotations = new Quaternion[extraTransforms.Length];
+            frameTime = ReplayManager.instance.currentRecordedTime,
+            position = ReplayManager.instance.WorldToRecordedPosition(transform.position),
+            rotation = transform.rotation
+        };
+
+        if (extraTransforms != null && extraTransforms.Length > 0)
+        {
+            frame.extraRotations = new Quaternion[extraTransforms.Length];
             for (int i = 0; i < extraTransforms.Length; i++)
             {
-                if (extraTransforms[i] != null)
-                {
-                    f.extraRotations[i] = extraTransforms[i].localRotation;
-                }
+                Transform t = extraTransforms[i];
+                frame.extraRotations[i] = t != null ? t.localRotation : Quaternion.identity;
             }
         }
 
-        // 3. Animations
         if (anim != null)
         {
-            f.isAnimEnabled = anim.enabled;
+            frame.isAnimEnabled = anim.enabled;
+            frame.animatorSnapshot = ReplayAnimatorUtility.Capture(anim);
 
-            f.boolValues = new bool[boolParams.Length];
-            for (int i = 0; i < boolParams.Length; i++)
+            if (boolParams != null && boolParams.Length > 0)
             {
-                f.boolValues[i] = anim.GetBool(boolParams[i]);
+                MergeLegacyBoolParams(ref frame);
             }
         }
 
-        sessionData.frames.Add(f);
+        sessionData.frames.Add(frame);
+    }
+
+    private void MergeLegacyBoolParams(ref ReplayFrame frame)
+    {
+        if (frame.animatorSnapshot == null)
+        {
+            frame.animatorSnapshot = new ReplayAnimatorSnapshot();
+        }
+
+        var boolNames = new List<string>(frame.animatorSnapshot.boolNames ?? System.Array.Empty<string>());
+        var boolValues = new List<bool>(frame.animatorSnapshot.boolValues ?? System.Array.Empty<bool>());
+
+        foreach (string param in boolParams)
+        {
+            if (string.IsNullOrEmpty(param) || boolNames.Contains(param)) continue;
+            boolNames.Add(param);
+            boolValues.Add(anim.GetBool(param));
+        }
+
+        frame.animatorSnapshot.boolNames = boolNames.ToArray();
+        frame.animatorSnapshot.boolValues = boolValues.ToArray();
     }
 
     void ApplyFrameInterpolated(ReplayFrame frameA, ReplayFrame frameB, float percent)
     {
-        Vector3 offset = Vector3.zero;
+        if (!isActiveAndEnabled || transform == null) return;
+
+        Vector3 recordedPosition = Vector3.Lerp(frameA.position, frameB.position, percent);
         if (ReplayManager.instance != null)
         {
-            offset = ReplayManager.instance.replayOffset;
+            transform.position = ReplayManager.instance.RecordedToWorldPosition(recordedPosition);
+        }
+        else
+        {
+            transform.position = recordedPosition;
         }
 
-        transform.position = offset + Vector3.Lerp(frameA.position, frameB.position, percent);
         transform.rotation = Quaternion.Slerp(frameA.rotation, frameB.rotation, percent);
 
-        if (frameA.extraRotations != null && extraTransforms.Length > 0)
-        {
-            for (int i = 0; i < extraTransforms.Length; i++)
-            {
-                if (extraTransforms[i] != null && i < frameB.extraRotations.Length)
-                {
-                    extraTransforms[i].localRotation = Quaternion.Slerp(frameA.extraRotations[i], frameB.extraRotations[i], percent);
-                }
-            }
-        }
+        ApplyExtraRotations(frameA, frameB, percent);
 
         if (anim != null)
         {
             anim.enabled = frameA.isAnimEnabled;
-
-            if (frameA.boolValues != null)
-            {
-                for (int i = 0; i < boolParams.Length; i++)
-                {
-                    if (i < frameA.boolValues.Length)
-                    {
-                        anim.SetBool(boolParams[i], frameA.boolValues[i]);
-                    }
-                }
-            }
+            ReplayAnimatorSnapshot snapshot = percent < 0.5f ? frameA.animatorSnapshot : frameB.animatorSnapshot;
+            ReplayAnimatorUtility.Apply(anim, snapshot);
         }
     }
 
-    void ToggleVisuals(bool state)
+    private void ApplyExtraRotations(ReplayFrame frameA, ReplayFrame frameB, float percent)
     {
-        Renderer[] renderers = GetComponentsInChildren<Renderer>();
-        foreach (var r in renderers) r.enabled = state;
+        if (extraTransforms == null || extraTransforms.Length == 0) return;
+        if (frameA.extraRotations == null || frameB.extraRotations == null) return;
 
-        Canvas[] canvases = GetComponentsInChildren<Canvas>();
-        foreach (var c in canvases) c.enabled = state;
+        for (int i = 0; i < extraTransforms.Length; i++)
+        {
+            Transform t = extraTransforms[i];
+            if (t == null) continue;
+            if (i >= frameA.extraRotations.Length || i >= frameB.extraRotations.Length) continue;
 
-        if (anim != null) anim.enabled = state;
+            t.localRotation = Quaternion.Slerp(frameA.extraRotations[i], frameB.extraRotations[i], percent);
+        }
     }
 
-    // Controls for Recording
+    private void SetRenderersEnabled(bool state)
+    {
+        Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+        foreach (Renderer renderer in renderers)
+        {
+            if (renderer == null || renderer.GetComponent<Camera>() != null) continue;
+            renderer.enabled = state;
+        }
+    }
+
+    private void ProcessAudioEvents()
+    {
+        if (sessionData.audioEvents == null || sessionData.audioEvents.Count == 0 || replayAudioSource == null)
+        {
+            return;
+        }
+
+        while (nextAudioEventIndex < sessionData.audioEvents.Count &&
+               sessionData.audioEvents[nextAudioEventIndex].time <= replayPlaybackTime)
+        {
+            ReplayAudioEvent audioEvent = sessionData.audioEvents[nextAudioEventIndex];
+            AudioClip clip = ResolveAudioClip(audioEvent.clipName);
+            if (clip != null)
+            {
+                replayAudioSource.pitch = audioEvent.pitch;
+                replayAudioSource.PlayOneShot(clip, audioEvent.volume);
+            }
+            nextAudioEventIndex++;
+        }
+    }
+
+    private AudioClip ResolveAudioClip(string clipName)
+    {
+        if (string.IsNullOrEmpty(clipName)) return null;
+        if (audioClipCache.TryGetValue(clipName, out AudioClip cached)) return cached;
+
+        AudioClip[] clips = Resources.FindObjectsOfTypeAll<AudioClip>();
+        foreach (AudioClip clip in clips)
+        {
+            if (clip.name == clipName)
+            {
+                audioClipCache[clipName] = clip;
+                return clip;
+            }
+        }
+
+        return null;
+    }
+
+    public void RegisterAudioEvent(string clipName, float volume, float pitch)
+    {
+        if (!isRecording || sessionData == null || ReplayManager.instance == null) return;
+
+        sessionData.audioEvents.Add(new ReplayAudioEvent
+        {
+            time = ReplayManager.instance.currentRecordedTime,
+            clipName = clipName,
+            volume = volume,
+            pitch = pitch
+        });
+    }
+
+    public void AutoConfigureComponents()
+    {
+        if (anim == null) anim = GetComponentInChildren<Animator>();
+        if (rb == null) rb = GetComponent<Rigidbody>();
+        if (agent == null) agent = GetComponent<NavMeshAgent>();
+    }
+
+    public static string ResolveCatalogId(GameObject go)
+    {
+        if (go == null) return string.Empty;
+        if (go.CompareTag("Player")) return "Player";
+
+        if (go.GetComponent<SoldierBrain>() != null) return "SoldierAgent";
+        if (go.GetComponent<DroneBrain>() != null) return "DroneAgent";
+        if (go.GetComponent<TankBrain>() != null) return "TankAgent";
+
+        string cleanedName = go.name.Replace("(Clone)", "").Trim();
+        if (cleanedName.Contains("Bullet")) return cleanedName.Contains("Small") ? "SmallBullet" : "Bullet";
+
+        return cleanedName;
+    }
+
     public void StartRecording(float offset = 0f)
     {
-        sessionData = new ReplaySessionData();
-        
-        // Tratar de limpiar el nombre de "(Clone)"
-        sessionData.prefabName = gameObject.name.Replace("(Clone)", "").Trim();
-        sessionData.objectTag = gameObject.tag;
-        sessionData.spawnOffset = offset;
-        sessionData.isPlayer = gameObject.CompareTag("Player");
+        if (isRecording)
+        {
+            return;
+        }
+
+        AutoConfigureComponents();
+
+        if (sessionData == null)
+        {
+            sessionData = new ReplaySessionData
+            {
+                prefabName = gameObject.name.Replace("(Clone)", "").Trim(),
+                catalogId = ResolveCatalogId(gameObject),
+                sourceInstanceId = gameObject.GetInstanceID(),
+                objectTag = gameObject.tag,
+                spawnOffset = offset,
+                isPlayer = gameObject.CompareTag("Player")
+            };
+        }
 
         isRecording = true;
         isReplaying = false;
-        timeTimer = 0;
+        timeTimer = 0f;
     }
 
-    public void PauseRecording()
-    {
-        isRecording = false;
-    }
+    public bool IsCurrentlyRecording => isRecording;
 
-    public void ResumeRecording()
-    {
-        isRecording = true;
-    }
+    public void PauseRecording() => isRecording = false;
+    public void ResumeRecording() => isRecording = true;
 
     public void StopRecording()
     {
         isRecording = false;
-        
-        // Guardar los datos en el ReplayManager
-        if (sessionData != null && sessionData.frames.Count > 0)
-        {
-            if (ReplayManager.instance != null)
-            {
-                ReplayManager.instance.SaveSessionData(sessionData);
-            }
-        }
     }
 
-    // Llamar cuando el objeto muere pero no debe destruirse todavía para el replay
+    public ReplaySessionData GetSessionData()
+    {
+        return sessionData;
+    }
+
     public void RecordDeath()
     {
-        if (isRecording && sessionData != null)
+        if (isRecording && sessionData != null && ReplayManager.instance != null)
         {
             sessionData.destroyTime = ReplayManager.instance.currentRecordedTime;
             StopRecording();
@@ -240,21 +332,32 @@ public class ReplayObject : MonoBehaviour
 
     private void OnDisable()
     {
-        if (isRecording)
+        if (isReplaying)
         {
-            RecordDeath();
+            isReplaying = false;
+            return;
         }
-    }
-    
-    private void OnDestroy()
-    {
+
         if (isRecording)
         {
             RecordDeath();
         }
     }
 
-    // Controls for Replay (clones)
+    private void OnDestroy()
+    {
+        if (isReplaying)
+        {
+            isReplaying = false;
+            return;
+        }
+
+        if (isRecording)
+        {
+            RecordDeath();
+        }
+    }
+
     public void SetupForReplay(ReplaySessionData data)
     {
         sessionData = data;
@@ -266,36 +369,47 @@ public class ReplayObject : MonoBehaviour
         isReplaying = true;
         currentFrameIndex = 0;
         replayPlaybackTime = 0f;
+        nextAudioEventIndex = 0;
 
-        if (rb) rb.isKinematic = true;
-        if (agent) agent.enabled = false;
-
-        // Desactivar scripts de control para que no interfieran en el replay
-        MonoBehaviour[] scripts = GetComponents<MonoBehaviour>();
-        foreach (var script in scripts)
+        replayAudioSource = GetComponent<AudioSource>();
+        if (replayAudioSource == null)
         {
-            if (script != this && script != anim)
-            {
-                script.enabled = false;
-            }
+            replayAudioSource = gameObject.AddComponent<AudioSource>();
         }
-        
-        // Desactivar colisiones si las hay
-        Collider[] colliders = GetComponentsInChildren<Collider>();
-        foreach(var col in colliders)
+        replayAudioSource.playOnAwake = false;
+        replayAudioSource.spatialBlend = 0f;
+
+        ApplyFirstReplayFrame();
+
+        if (sessionData != null && sessionData.spawnOffset > 0f && replayPlaybackTime < sessionData.spawnOffset)
         {
-            col.enabled = false;
+            SetRenderersEnabled(false);
+        }
+        else
+        {
+            SetRenderersEnabled(true);
+        }
+    }
+
+    private void ApplyFirstReplayFrame()
+    {
+        if (sessionData == null || sessionData.frames == null || sessionData.frames.Count == 0)
+        {
+            return;
         }
 
-        if (sessionData != null && sessionData.spawnOffset > 0)
-        {
-            ToggleVisuals(false);
-        }
+        replayPlaybackTime = Mathf.Max(0f, sessionData.spawnOffset);
+        currentFrameIndex = 0;
+        ReplayFrame firstFrame = sessionData.frames[0];
+        ApplyFrameInterpolated(firstFrame, firstFrame, 0f);
+    }
 
-        AudioListener listener = GetComponentInChildren<AudioListener>();
-        if (listener != null)
+    public void StopReplayPlayback()
+    {
+        isReplaying = false;
+        if (replayAudioSource != null)
         {
-            listener.enabled = false;
+            replayAudioSource.Stop();
         }
     }
 }

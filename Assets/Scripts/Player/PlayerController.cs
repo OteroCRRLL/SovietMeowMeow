@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -53,8 +53,25 @@ public class PlayerController : MonoBehaviour
     public float adrenalineFOV = 80f;
     public float fovTransitionSpeed = 5f;
 
+    [Header("Audio")]
+    public AudioSource footstepsAudioSource;
+    public AudioClip snowFootstepsClip;
+    public AudioSource catAudioSource;
+    public AudioClip catDamageClip;
+    public AudioClip catHissingClip;
+    public float catHissingRadius = 8f;
+    public float catHissingCheckInterval = 0.25f;
+    [Range(0f, 1f)] public float catHissingChance = 0.333f;
+    public LayerMask catHissingDetectionLayers = ~0;
+
     // The character controller component on the player
     private CharacterController controller;
+    private HealthSystem playerHealth;
+    private FactionIdentity playerFaction;
+    private float lastHealthPercent;
+    private float nextHissingCheckTime;
+    private bool enemyWasInHissingRadius;
+    private float footstepGraceTimer;
 
     /// <summary>
     /// Standard Unity function called whenever the attached gameobject is enabled
@@ -85,6 +102,25 @@ public class PlayerController : MonoBehaviour
         HideMouse();
         SetUpCharacterController();
         SetUpRigidbody();
+        SetUpAudio();
+    }
+
+    private void SetUpAudio()
+    {
+        if (footstepsAudioSource == null) footstepsAudioSource = gameObject.AddComponent<AudioSource>();
+        if (catAudioSource == null) catAudioSource = gameObject.AddComponent<AudioSource>();
+
+        footstepsAudioSource.loop = true;
+        footstepsAudioSource.clip = snowFootstepsClip;
+        playerFaction = GetComponent<FactionIdentity>();
+        playerHealth = GetComponent<HealthSystem>();
+
+        if (playerHealth != null)
+        {
+            lastHealthPercent = playerHealth.maxHealth > 0f ? playerHealth.CurrentHealth / playerHealth.maxHealth : 1f;
+            playerHealth.onHealthChanged.RemoveListener(HandleHealthChanged);
+            playerHealth.onHealthChanged.AddListener(HandleHealthChanged);
+        }
     }
 
     /// <summary>
@@ -119,6 +155,104 @@ public class PlayerController : MonoBehaviour
         ProcessMovement();
         ProcessHorizontalRotation();
         ProcessAdrenalineEffects();
+        ProcessAudio();
+    }
+
+    private void ProcessAudio()
+    {
+        ProcessFootstepsAudio();
+        ProcessCatHissingAudio();
+    }
+
+    private void ProcessFootstepsAudio()
+    {
+        if (footstepsAudioSource == null || snowFootstepsClip == null || controller == null) return;
+
+        bool isMoving = moveInput.ReadValue<Vector2>().sqrMagnitude > 0.01f;
+
+        // Tolerance for isGrounded flickering on terrain/slopes
+        if (controller.isGrounded)
+        {
+            footstepGraceTimer = 0.2f;
+        }
+        else
+        {
+            footstepGraceTimer -= Time.deltaTime;
+        }
+
+        if (isMoving && footstepGraceTimer > 0f)
+        {
+            if (!footstepsAudioSource.isPlaying)
+            {
+                // Play starts from 0 if stopped, or resumes if paused. 
+                footstepsAudioSource.Play();
+            }
+        }
+        else
+        {
+            if (footstepsAudioSource.isPlaying)
+            {
+                footstepsAudioSource.Pause(); // Pause instead of Stop avoids restarting sound completely if toggling rapidly
+            }
+        }
+    }
+
+    private void ProcessCatHissingAudio()
+    {
+        if (catHissingClip == null || Time.time < nextHissingCheckTime) return;
+        nextHissingCheckTime = Time.time + catHissingCheckInterval;
+
+        bool enemyInRadius = HasEnemyInHissingRadius();
+        if (enemyInRadius && !enemyWasInHissingRadius && Random.value <= catHissingChance)
+        {
+            PlayCatClip(catHissingClip, 1f);
+        }
+
+        enemyWasInHissingRadius = enemyInRadius;
+    }
+
+    private bool HasEnemyInHissingRadius()
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position, catHissingRadius, catHissingDetectionLayers, QueryTriggerInteraction.Ignore);
+        foreach (Collider hit in hits)
+        {
+            if (hit == null || hit.transform.root == transform.root) continue;
+
+            HealthSystem health = hit.GetComponentInParent<HealthSystem>();
+            if (health != null && health.IsDead) continue;
+
+            FactionIdentity faction = hit.GetComponentInParent<FactionIdentity>();
+            if (playerFaction != null && faction != null)
+            {
+                if (playerFaction.IsEnemy(faction.myFaction)) return true;
+            }
+            else if (hit.gameObject.tag == "Enemy" || hit.GetComponentInParent<SoldierBrain>() != null || hit.GetComponentInParent<DroneBrain>() != null || hit.GetComponentInParent<TankBrain>() != null)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void HandleHealthChanged(float healthPercent)
+    {
+        if (healthPercent < lastHealthPercent)
+        {
+            PlayCatClip(catDamageClip, 0.1f);
+        }
+
+        lastHealthPercent = healthPercent;
+    }
+
+    private void PlayCatClip(AudioClip clip, float startTime)
+    {
+        if (catAudioSource == null || clip == null) return;
+
+        catAudioSource.clip = clip;
+        catAudioSource.loop = false;
+        catAudioSource.time = Mathf.Clamp(startTime, 0f, Mathf.Max(0f, clip.length - 0.01f));
+        catAudioSource.Play();
     }
 
     void ProcessAdrenalineEffects()
@@ -302,5 +436,13 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(duration);
         
         hasInfiniteStamina = false;
+    }
+
+    private void OnDestroy()
+    {
+        if (playerHealth != null)
+        {
+            playerHealth.onHealthChanged.RemoveListener(HandleHealthChanged);
+        }
     }
 }

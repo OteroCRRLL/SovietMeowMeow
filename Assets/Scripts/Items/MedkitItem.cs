@@ -5,6 +5,9 @@ public class MedkitItem : UsableItem
     [Header("Medkit Config")]
     public float healAmount = 50f;
 
+    [Header("Audio")]
+    public AudioClip healEffectClip;
+
     protected override void UseItem()
     {
         HealthSystem playerHealth = GetComponentInParent<HealthSystem>();
@@ -26,8 +29,11 @@ public class MedkitItem : UsableItem
             {
                 playerHealth.Heal(healAmount);
                 Debug.Log("Botiquín usado. Vida curada: " + healAmount);
-                
-                // Aquí podrías reproducir un sonido
+
+                if (healEffectClip != null)
+                {
+                    AudioSource.PlayClipAtPoint(healEffectClip, playerHealth.transform.position);
+                }
                 
                 ConsumeItem(); // Desaparece del inventario
             }

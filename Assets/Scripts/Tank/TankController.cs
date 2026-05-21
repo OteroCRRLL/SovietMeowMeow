@@ -10,6 +10,10 @@ public class TankController : MonoBehaviour
     public GameObject bulletPrefab;
     public Animator anim;
 
+    [Header("Audio")]
+    public AudioSource shootAudioSource;
+    public AudioClip tankShootClip;
+
     [Header("Settings")]
     public float rotationSpeed = 5f;
     public float bulletForce = 4500f; 
@@ -72,7 +76,6 @@ public class TankController : MonoBehaviour
                 Vector3 targetCenter = targetCollider != null ? targetCollider.bounds.center : target.position + Vector3.up * 1f;
                 direction = (targetCenter - shootPoint.position).normalized;
             }
-
             else
             {
                 direction = shootPoint.forward;
@@ -87,6 +90,15 @@ public class TankController : MonoBehaviour
             Vector3 finalDirection = spreadRotation * direction;
 
             rb.AddForce(finalDirection * bulletForce);
+        }
+
+        if (shootAudioSource != null && tankShootClip != null)
+        {
+            shootAudioSource.PlayOneShot(tankShootClip);
+        }
+        else if (tankShootClip != null)
+        {
+            AudioSource.PlayClipAtPoint(tankShootClip, shootPoint.position);
         }
 
         Debug.Log("Tank fired");

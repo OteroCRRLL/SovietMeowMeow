@@ -60,6 +60,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -137,3 +140,4 @@ MonoBehaviour:
     m_Flags: 0
   holdTimeRequired: 0.7
   healAmount: 150
+  healEffectClip: {fileID: 8300000, guid: 29f63c3f0dced4940a1e9f1b3cdf596a, type: 3}

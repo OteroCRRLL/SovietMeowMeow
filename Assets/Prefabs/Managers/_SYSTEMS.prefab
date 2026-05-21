@@ -825,6 +825,11 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8464138701586873959, guid: b6cafc55c5086984d8860a08e1425786,
         type: 3}
+    - target: {fileID: 7879829901720201142, guid: fa11b06e12724a9489669ea2fd4c30be,
+        type: 3}
+      propertyPath: replayLevelGeometryPrefab
+      value: 
+      objectReference: {fileID: 3633410409902278670, guid: c0219c8da8ea7b94ba5a965407981b1c, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

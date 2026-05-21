@@ -10,14 +10,23 @@ public class DroneBrain : MonoBehaviour
     private HealthSystem health;
     private FactionIdentity myFaction;
 
+    [Header("Audio")]
+    public AudioSource droneAudioSource;
+    public AudioClip droneClip;
+    public float droneLoopEndTime = 10f;
+    public AudioClip explosionImpactClip;
+
+    [Header("Visual Effects")]
+    public GameObject explosionPrefab;
+
     [Header("Flight Settings")]
     public float patrolRadius = 30f;
     public float patrolSpeed = 6f;
     public float diveSpeed = 35f;
 
     [Header("Combat Settings")]
-    public float lockTime = 2.5f; // Tiempo que tiene el jugador para esconderse
-    public float memoryTime = 3.0f; // Tiempo que el dron se queda mirando si te escondes
+    public float lockTime = 2.5f;
+    public float memoryTime = 3.0f;
     public float explosionDamage = 80f;
     public float explosionRadius = 6f;
 
@@ -36,7 +45,17 @@ public class DroneBrain : MonoBehaviour
     {
         if (sensor == null) sensor = GetComponentInChildren<DroneSensor>();
         if (controller == null) controller = GetComponentInChildren<DroneController>();
+
         
+        if (droneAudioSource == null) droneAudioSource = GetComponent<AudioSource>();
+        if (droneAudioSource == null) droneAudioSource = gameObject.AddComponent<AudioSource>();
+
+        
+        droneAudioSource.spatialBlend = 1f;
+        droneAudioSource.minDistance = 10f; // Hasta 10 metros se oye al máximo
+        droneAudioSource.maxDistance = 60f; // Se deja de oír a los 60 metros
+        droneAudioSource.rolloffMode = AudioRolloffMode.Linear;
+
         myFaction = GetComponent<FactionIdentity>();
         health = GetComponent<HealthSystem>();
 
@@ -45,7 +64,6 @@ public class DroneBrain : MonoBehaviour
             health.onDeath.AddListener(HandleDeath);
         }
 
-        // Evitar que el dron caiga por gravedad mientras patrulla
         if (TryGetComponent<Rigidbody>(out Rigidbody rb))
         {
             rb.isKinematic = true;
@@ -53,15 +71,18 @@ public class DroneBrain : MonoBehaviour
         }
 
         SetRandomPatrolDestination();
+        StartDroneAudio();
     }
 
     private void Update()
     {
+        UpdateDroneAudio();
+
         if (currentState == DroneState.Dead) return;
 
         bool isPlayer = false;
         Transform visibleTarget = null;
-        
+
         if (sensor != null)
         {
             visibleTarget = sensor.GetBestTarget(out isPlayer);
@@ -87,6 +108,40 @@ public class DroneBrain : MonoBehaviour
         }
     }
 
+    private void StartDroneAudio()
+    {
+        if (droneAudioSource == null || droneClip == null) return;
+
+        droneAudioSource.clip = droneClip;
+        
+        droneAudioSource.loop = false;
+        droneAudioSource.Play();
+    }
+
+    private void UpdateDroneAudio()
+    {
+        if (droneAudioSource == null || droneClip == null) return;
+
+        if (currentState == DroneState.Dead)
+        {
+            if (droneAudioSource.isPlaying) droneAudioSource.Stop();
+            return;
+        }
+
+        
+        float loopEnd = Mathf.Min(droneLoopEndTime, droneClip.length);
+
+        if (droneAudioSource.isPlaying && droneAudioSource.time >= loopEnd)
+        {
+            droneAudioSource.Stop();
+            droneAudioSource.Play(); 
+        }
+        else if (!droneAudioSource.isPlaying)
+        {
+            StartDroneAudio();
+        }
+    }
+
     public void Paralyze(float duration)
     {
         if (currentState == DroneState.Dead || currentState == DroneState.Kamikaze) return;
@@ -95,14 +150,14 @@ public class DroneBrain : MonoBehaviour
         {
             preParalyzedState = currentState;
             currentState = DroneState.Paralyzed;
-            
+
             if (TryGetComponent<Rigidbody>(out Rigidbody rb))
             {
-                rb.velocity = Vector3.zero;
+                rb.linearVelocity = Vector3.zero;
                 rb.angularVelocity = Vector3.zero;
             }
         }
-        
+
         paralyzedTimer = duration;
     }
 
@@ -125,8 +180,7 @@ public class DroneBrain : MonoBehaviour
             lastKnownTargetPos = target.position;
             currentState = DroneState.Locking;
             stateTimer = 0f;
-            
-            // Avisar a los soldados soviéticos de la zona si el dron es atacado
+
             AlertNearbyAllies(currentTarget);
         }
     }
@@ -135,23 +189,19 @@ public class DroneBrain : MonoBehaviour
     {
         if (visibleTarget != null)
         {
-            // ¡Enemigo a la vista! Empezamos a fijar el objetivo
             currentTarget = visibleTarget;
             lastKnownTargetPos = visibleTarget.position;
             currentState = DroneState.Locking;
             stateTimer = 0f;
-            
-            // Avisar a los soldados soviéticos de la zona si el dron los ve (chivato)
+
             AlertNearbyAllies(currentTarget);
             return;
         }
 
-        // Patrullar volando de forma autónoma hacia el punto actual
         Vector3 dir = (currentPatrolPoint - transform.position).normalized;
         transform.position += dir * patrolSpeed * Time.deltaTime;
         controller.RotateTowardsPoint(currentPatrolPoint);
 
-        // Si llegamos al destino, buscar otro
         if (Vector3.Distance(transform.position, currentPatrolPoint) < 1f)
         {
             SetRandomPatrolDestination();
@@ -173,17 +223,14 @@ public class DroneBrain : MonoBehaviour
 
         if (stillVisible)
         {
-            // Le seguimos viendo, el lock avanza
             lastKnownTargetPos = currentTarget.position;
             stateTimer += Time.deltaTime;
 
             if (stateTimer >= lockTime)
             {
-                // ¡LOCK COMPLETADO! Empieza el picado mortal
                 currentState = DroneState.Kamikaze;
-                
-                // Quitamos el modo cinemático para que colisione con físicas fuertes al caer
-                if (TryGetComponent<Rigidbody>(out Rigidbody rb)) 
+
+                if (TryGetComponent<Rigidbody>(out Rigidbody rb))
                 {
                     rb.isKinematic = false;
                 }
@@ -191,7 +238,6 @@ public class DroneBrain : MonoBehaviour
         }
         else
         {
-            // Lo perdimos de vista durante el lock
             currentState = DroneState.LostTarget;
             stateTimer = 0f;
         }
@@ -199,12 +245,10 @@ public class DroneBrain : MonoBehaviour
 
     private void UpdateLostTarget(Transform visibleTarget)
     {
-        // Se queda flotando quieto, mirando a la última esquina donde vio al enemigo
         controller.RotateTowardsPoint(lastKnownTargetPos);
 
         if (visibleTarget != null)
         {
-            // ¡Ha vuelto a asomarse! Retomamos el lock
             currentTarget = visibleTarget;
             currentState = DroneState.Locking;
             return;
@@ -213,7 +257,6 @@ public class DroneBrain : MonoBehaviour
         stateTimer += Time.deltaTime;
         if (stateTimer >= memoryTime)
         {
-            // Se cansó de esperar. Vuelve a patrullar.
             currentTarget = null;
             currentState = DroneState.Patrol;
             SetRandomPatrolDestination();
@@ -222,21 +265,19 @@ public class DroneBrain : MonoBehaviour
 
     private void UpdateKamikaze()
     {
-        // Vuelo libre y extremadamente agresivo hacia la última posición conocida
         Vector3 direction = (lastKnownTargetPos - transform.position).normalized;
-        
+
         if (TryGetComponent<Rigidbody>(out Rigidbody rb))
         {
-            rb.velocity = direction * diveSpeed;
+            rb.linearVelocity = direction * diveSpeed;
         }
         else
         {
             transform.position += direction * diveSpeed * Time.deltaTime;
         }
-        
+
         controller.RotateTowardsPoint(lastKnownTargetPos);
 
-        // Si estamos súper cerca de la meta y no hemos chocado con nada físico, explotamos de todos modos
         if (Vector3.Distance(transform.position, lastKnownTargetPos) < 1.5f)
         {
             Explode();
@@ -251,18 +292,14 @@ public class DroneBrain : MonoBehaviour
         while (!validPointFound && attempts < 10)
         {
             attempts++;
-            // Buscamos un punto aleatorio en 3D
             Vector3 randomDir = Random.insideUnitSphere * patrolRadius;
-            
-            // Limitamos un poco la verticalidad para que no se vaya al espacio ni se entierre
-            randomDir.y = Random.Range(-5f, 5f); 
-            
+            randomDir.y = Random.Range(-5f, 5f);
+
             Vector3 potentialPoint = transform.position + randomDir;
 
-            // Comprobamos con un rayo si podemos volar hasta ahí en línea recta sin chocar con un edificio
             Vector3 dirToPoint = (potentialPoint - transform.position).normalized;
             float dist = Vector3.Distance(transform.position, potentialPoint);
-            
+
             if (!Physics.Raycast(transform.position, dirToPoint, dist, ~0, QueryTriggerInteraction.Ignore))
             {
                 currentPatrolPoint = potentialPoint;
@@ -270,17 +307,14 @@ public class DroneBrain : MonoBehaviour
             }
         }
 
-        // Si después de 10 intentos no encuentra hueco (ej: está metido en un conducto muy estrecho)
         if (!validPointFound)
         {
-            // Vuelve por donde ha venido para desatascarse
             currentPatrolPoint = transform.position - transform.forward * 5f;
         }
     }
 
     private void AlertNearbyAllies(Transform target)
     {
-        // El Dron avisa a los escuadrones de soldados cercanos
         Collider[] allies = Physics.OverlapSphere(transform.position, 50f);
         foreach (Collider col in allies)
         {
@@ -294,13 +328,12 @@ public class DroneBrain : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        // Si chocamos contra lo que sea en modo kamikaze (suelo, pared, persona), explotamos
         if (currentState == DroneState.Kamikaze)
         {
             Explode();
         }
     }
-    
+
     private void OnTriggerEnter(Collider other)
     {
         if (currentState == DroneState.Kamikaze)
@@ -312,7 +345,7 @@ public class DroneBrain : MonoBehaviour
     public void Explode()
     {
         if (currentState == DroneState.Dead) return;
-        HandleDeath(); 
+        HandleDeath();
     }
 
     private void HandleDeath()
@@ -320,15 +353,13 @@ public class DroneBrain : MonoBehaviour
         if (currentState == DroneState.Dead) return;
         currentState = DroneState.Dead;
 
-        // Daño en área (Explosión)
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, explosionRadius);
         System.Collections.Generic.HashSet<HealthSystem> damagedTargets = new System.Collections.Generic.HashSet<HealthSystem>();
 
         foreach (Collider hit in hitColliders)
         {
             FactionIdentity hitFaction = hit.GetComponentInParent<FactionIdentity>();
-            
-            // Fuego amigo: los drones soviéticos no explotan a otros soviéticos
+
             if (hitFaction != null && myFaction != null && !myFaction.IsEnemy(hitFaction.myFaction)) continue;
 
             HealthSystem targetHealth = hit.GetComponentInParent<HealthSystem>();
@@ -339,15 +370,31 @@ public class DroneBrain : MonoBehaviour
             }
         }
 
-        // Desactivamos el objeto del dron al explotar
+        if (droneAudioSource != null) droneAudioSource.Stop();
+
+        if (explosionImpactClip != null)
+        {
+            AudioSource.PlayClipAtPoint(explosionImpactClip, transform.position);
+        }
+
+        if (explosionPrefab != null)
+        {
+            Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+        }
+
         gameObject.SetActive(false);
+    }
+
+    private void OnDisable()
+    {
+        if (droneAudioSource != null) droneAudioSource.Stop();
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, explosionRadius);
-        
+
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(currentPatrolPoint, 0.5f);
         Gizmos.DrawLine(transform.position, currentPatrolPoint);

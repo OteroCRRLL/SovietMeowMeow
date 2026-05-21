@@ -1,7 +1,7 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class ReplayAppManager : MonoBehaviour
 {
@@ -13,106 +13,212 @@ public class ReplayAppManager : MonoBehaviour
     public int renderWidth = 1024;
     public int renderHeight = 1024;
 
+    [Header("Selector de día (opcional)")]
+    public TextMeshProUGUI dayLabel;
+    public Button previousDayButton;
+    public Button nextDayButton;
+
     private RenderTexture forwardRT;
     private RenderTexture reverseRT;
-
     private Camera forwardCloneCam;
     private Camera reverseCloneCam;
+    private int currentPlaybackDay = -1;
+    private bool isPlaying;
+
+    private void Awake()
+    {
+        if (previousDayButton != null)
+        {
+            previousDayButton.onClick.RemoveListener(ShowPreviousDay);
+            previousDayButton.onClick.AddListener(ShowPreviousDay);
+        }
+
+        if (nextDayButton != null)
+        {
+            nextDayButton.onClick.RemoveListener(ShowNextDay);
+            nextDayButton.onClick.AddListener(ShowNextDay);
+        }
+    }
 
     public void OnEnable()
     {
-        // Al abrir la app del PC, si no hay grabaciones, podríamos mostrar un mensaje,
-        // pero por ahora simplemente empezamos la reproducción si hay algo.
-        if (ReplayManager.instance != null && ReplayManager.instance.recordedSessions.Count > 0)
+        if (ReplayManager.instance == null)
         {
-            PlayReplay();
+            Debug.LogWarning("ReplayManager no disponible. Entra al nivel al menos una vez o asegúrate de que persiste entre escenas.");
+            return;
         }
-        else
-        {
-            Debug.LogWarning("No hay datos de Replay para reproducir.");
-        }
+
+        currentPlaybackDay = ReplayManager.instance.GetDefaultPlaybackDay();
+        ReplayManager.instance.SetPlaybackDay(currentPlaybackDay);
+        UpdateDayLabel();
     }
 
     public void OnDisable()
     {
-        // Al cerrar la app o salir del PC, detenemos el replay y limpiamos memorias
         StopReplay();
+    }
+
+    public void ShowPreviousDay()
+    {
+        if (ReplayManager.instance == null) return;
+        StopReplay();
+        currentPlaybackDay = ReplayManager.instance.CyclePlaybackDay(-1);
+        ReplayManager.instance.SetPlaybackDay(currentPlaybackDay);
+        UpdateDayLabel();
+        PlayReplay();
+    }
+
+    public void ShowNextDay()
+    {
+        if (ReplayManager.instance == null) return;
+        StopReplay();
+        currentPlaybackDay = ReplayManager.instance.CyclePlaybackDay(1);
+        ReplayManager.instance.SetPlaybackDay(currentPlaybackDay);
+        UpdateDayLabel();
+        PlayReplay();
     }
 
     public void PlayReplay()
     {
         if (ReplayManager.instance == null) return;
 
-        // Limpiar RT anteriores si los hay
-        CleanupRenderTextures();
+        if (currentPlaybackDay < 0)
+        {
+            currentPlaybackDay = ReplayManager.instance.GetDefaultPlaybackDay();
+            ReplayManager.instance.SetPlaybackDay(currentPlaybackDay);
+        }
 
-        // Crear nuevas RenderTextures
-        forwardRT = new RenderTexture(renderWidth, renderHeight, 24);
-        reverseRT = new RenderTexture(renderWidth, renderHeight, 24);
+        if (!ReplayManager.instance.HasPlaybackData(currentPlaybackDay))
+        {
+            Debug.LogWarning($"No hay replay guardado para el día {currentPlaybackDay}.");
+            UpdateDayLabel();
+            return;
+        }
 
-        // Asignar al UI
-        if (forwardCameraImage != null) forwardCameraImage.texture = forwardRT;
-        if (reverseCameraImage != null) reverseCameraImage.texture = reverseRT;
+        StopReplay();
+        StartCoroutine(StartReplayRoutine());
+    }
 
-        // Iniciar la reproducción instanciando clones
-        ReplayManager.instance.StartPlaybackFromData();
+    private IEnumerator StartReplayRoutine()
+    {
+        CreateRenderTextures();
+        BindTexturesToUI();
 
-        // Buscar las cámaras en el clon del jugador
+        ReplayManager.instance.StartPlaybackForDay(currentPlaybackDay);
+        UpdateDayLabel();
+
+        yield return null;
+        yield return new WaitForEndOfFrame();
+
         GameObject playerClone = ReplayManager.instance.GetPlayerClone();
-        if (playerClone != null)
+        if (playerClone == null)
         {
-            Camera[] cams = playerClone.GetComponentsInChildren<Camera>(true);
-            foreach (Camera cam in cams)
-            {
-                if (cam.gameObject.name.Contains("ForwardCamera"))
-                {
-                    forwardCloneCam = cam;
-                    forwardCloneCam.targetTexture = forwardRT;
-                    // Evitar que renderice audio si tuviera un listener extra
-                    AudioListener al = cam.GetComponent<AudioListener>();
-                    if (al) al.enabled = false;
-                }
-                else if (cam.gameObject.name.Contains("ReverseCamera"))
-                {
-                    reverseCloneCam = cam;
-                    reverseCloneCam.targetTexture = reverseRT;
-                    AudioListener al = cam.GetComponent<AudioListener>();
-                    if (al) al.enabled = false;
-                }
-                else
-                {
-                    // Desactivar cualquier otra cámara del clon para evitar conflictos de pantalla
-                    cam.enabled = false;
-                }
-            }
+            Debug.LogError("No se instanció el clon del Player durante el Replay. Revisa los prefabs del ReplayManager.");
+            yield break;
+        }
 
-            if (forwardCloneCam == null) Debug.LogWarning("No se encontró ForwardCamera en el clon del Player");
-            if (reverseCloneCam == null) Debug.LogWarning("No se encontró ReverseCamera en el clon del Player");
-        }
-        else
+        bool camerasReady = ReplayPlaybackUtility.TryConfigureReplayCameras(
+            playerClone, forwardRT, reverseRT, out forwardCloneCam, out reverseCloneCam);
+
+        if (!camerasReady)
         {
-            Debug.LogError("No se instanció el clon del Player durante el Replay. Revisa tus Prefabs en el ReplayManager.");
+            Debug.LogWarning(
+                "No se pudieron configurar ambas cámaras del replay. Revisa CameraPivot/ForwardCamera/ReverseCamera en el prefab del jugador.");
         }
+
+        isPlaying = true;
     }
 
     public void StopReplay()
     {
+        isPlaying = false;
+
         if (ReplayManager.instance != null)
         {
             ReplayManager.instance.StopPlayback();
         }
 
+        ReleaseCameraTargets();
+        CleanupRenderTextures();
+        ClearUIImageTextures();
+    }
+
+    private void CreateRenderTextures()
+    {
         CleanupRenderTextures();
 
-        if (forwardCameraImage != null) forwardCameraImage.texture = null;
-        if (reverseCameraImage != null) reverseCameraImage.texture = null;
+        forwardRT = new RenderTexture(renderWidth, renderHeight, 24, RenderTextureFormat.ARGB32);
+        reverseRT = new RenderTexture(renderWidth, renderHeight, 24, RenderTextureFormat.ARGB32);
+        forwardRT.Create();
+        reverseRT.Create();
+    }
+
+    private void BindTexturesToUI()
+    {
+        if (forwardCameraImage != null)
+        {
+            forwardCameraImage.enabled = true;
+            forwardCameraImage.raycastTarget = true;
+            forwardCameraImage.texture = forwardRT;
+            forwardCameraImage.color = Color.white;
+            forwardCameraImage.gameObject.SetActive(true);
+            forwardCameraImage.SetMaterialDirty();
+        }
+
+        if (reverseCameraImage != null)
+        {
+            reverseCameraImage.enabled = true;
+            reverseCameraImage.raycastTarget = true;
+            reverseCameraImage.texture = reverseRT;
+            reverseCameraImage.color = Color.white;
+            reverseCameraImage.gameObject.SetActive(true);
+            reverseCameraImage.SetMaterialDirty();
+        }
+    }
+
+    private void ReleaseCameraTargets()
+    {
+        if (forwardCloneCam != null)
+        {
+            forwardCloneCam.targetTexture = null;
+            forwardCloneCam = null;
+        }
+
+        if (reverseCloneCam != null)
+        {
+            reverseCloneCam.targetTexture = null;
+            reverseCloneCam = null;
+        }
+    }
+
+    private void ClearUIImageTextures()
+    {
+        if (forwardCameraImage != null)
+        {
+            forwardCameraImage.texture = null;
+        }
+
+        if (reverseCameraImage != null)
+        {
+            reverseCameraImage.texture = null;
+        }
+    }
+
+    private void UpdateDayLabel()
+    {
+        if (dayLabel == null) return;
+
+        if (ReplayManager.instance == null || !ReplayManager.instance.HasAnyPlaybackData())
+        {
+            dayLabel.text = "Sin grabaciones";
+            return;
+        }
+
+        dayLabel.text = $"Día {currentPlaybackDay}";
     }
 
     private void CleanupRenderTextures()
     {
-        if (forwardCloneCam != null) forwardCloneCam.targetTexture = null;
-        if (reverseCloneCam != null) reverseCloneCam.targetTexture = null;
-
         if (forwardRT != null)
         {
             forwardRT.Release();

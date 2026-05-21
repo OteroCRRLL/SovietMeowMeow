@@ -17,4 +17,7 @@ public class SaveData
     // Inventario y equipamiento
     public List<string> hubInventory = new List<string>();
     public string[] equippedItems = new string[3] { "", "", "" };
+
+    // Replays archivados por día de juego
+    public List<DayReplayArchive> replayArchive = new List<DayReplayArchive>();
 }

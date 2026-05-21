@@ -11,7 +11,11 @@ public class TankBullets : MonoBehaviour
 
     public float explosionDamage = 50f; 
 
-    //public GameObject explosionEffect;
+    [Header("Audio")]
+    public AudioClip explosionImpactClip;
+
+    [Header("Visual Effects")]
+    public GameObject explosionPrefab;
 
     [Header("Filter")]
     public List<string> collisionTags = new List<string>();
@@ -97,6 +101,17 @@ public class TankBullets : MonoBehaviour
                 }
             }
         }
+        
+        if (explosionImpactClip != null)
+        {
+            AudioSource.PlayClipAtPoint(explosionImpactClip, transform.position);
+        }
+
+        if (explosionPrefab != null)
+        {
+            Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+        }
+
         Destroy(gameObject); // Destruye la bala
     }
 

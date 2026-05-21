@@ -39,7 +39,12 @@ public class LevelManager : MonoBehaviour
     {
         if (GameManager.instance != null && SceneController.instance != null)
         {
-            if (ReplayManager.instance != null) ReplayManager.instance.StopRecording();
+            if (ReplayManager.instance != null)
+            {
+                ReplayManager.instance.StopRecording();
+                ReplayManager.instance.ArchiveMissionForDay(GameManager.instance.currentDay);
+                ReplayManager.instance.recordedSessions.Clear();
+            }
             if (CameraScoring.instance != null) 
             {
                 int viewsObtained = CameraScoring.instance.GetCurrentScore();
@@ -50,6 +55,7 @@ public class LevelManager : MonoBehaviour
             }
            
             GameManager.instance.hasDeployedToday = true; // El jugador ya hizo su misión de hoy
+            GameManager.instance.SaveGame();
             
             Debug.Log("Extraction complete. Returning to Hub.");
             SceneController.instance.LoadScene("Hub"); // Cambiar al nombre exacto de la escena del Hub

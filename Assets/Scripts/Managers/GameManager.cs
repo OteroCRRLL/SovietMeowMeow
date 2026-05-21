@@ -30,7 +30,12 @@ public class GameManager : MonoBehaviour
 
     [Header("Player Instantiation")]
     public GameObject playerPrefab;
+
+    [Header("Replay")]
+    [Tooltip("Prefab del mapa completo (WorldGeometry) para reproducir replays en el Hub.")]
+    public GameObject replayLevelGeometryPrefab;
     private GameObject currentPlayerInstance;
+    private List<DayReplayArchive> pendingReplayArchive;
 
     private void Awake()
     {
@@ -99,6 +104,7 @@ public class GameManager : MonoBehaviour
             else
             {
                 Debug.Log("Cuota no cumplida. Fin del juego.");
+                ClearSavedReplayData();
                 SaveManager.DeleteSave();
                 if (DeathScreenManager.instance != null)
                 {
@@ -135,6 +141,7 @@ public class GameManager : MonoBehaviour
         if (currentDay >= maxDaysPerWeek && currentMoney < requiredMoneyQuota)
         {
             Debug.Log("Cuota no cumplida. Fin del juego.");
+            ClearSavedReplayData();
             SaveManager.DeleteSave();
             ResetProgress();
             return false; // Despedido -> MainMenu
@@ -160,6 +167,17 @@ public class GameManager : MonoBehaviour
         
         hubInventory.Clear();
         equippedItems = new string[3] { "", "", "" };
+
+        ClearSavedReplayData();
+    }
+
+    private void ClearSavedReplayData()
+    {
+        pendingReplayArchive = new List<DayReplayArchive>();
+        if (ReplayManager.instance != null)
+        {
+            ReplayManager.instance.ClearAllReplayData();
+        }
     }
 
     /// <summary>
@@ -175,6 +193,13 @@ public class GameManager : MonoBehaviour
         
         data.hubInventory = new List<string>(this.hubInventory);
         data.equippedItems = (string[])this.equippedItems.Clone();
+
+        if (ReplayManager.instance != null)
+        {
+            pendingReplayArchive = ReplayManager.instance.ExportArchiveForSave();
+        }
+
+        data.replayArchive = pendingReplayArchive ?? new List<DayReplayArchive>();
         
         SaveManager.SaveGame(data);
     }
@@ -195,6 +220,15 @@ public class GameManager : MonoBehaviour
         {
             this.equippedItems = (string[])data.equippedItems.Clone();
         }
+
+        pendingReplayArchive = data.replayArchive ?? new List<DayReplayArchive>();
+        ApplyPendingReplayArchive();
+    }
+
+    private void ApplyPendingReplayArchive()
+    {
+        if (pendingReplayArchive == null || ReplayManager.instance == null) return;
+        ReplayManager.instance.ImportArchiveFromSave(pendingReplayArchive);
     }
 
     public bool BuyItem(ItemData item)
@@ -228,6 +262,8 @@ public class GameManager : MonoBehaviour
 
     private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
     {
+        ApplyPendingReplayArchive();
+
         // Asegurarnos de que el input siga activo tras cambiar de escena
         if (pauseInput != null) 
         {
