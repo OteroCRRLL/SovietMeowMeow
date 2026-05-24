@@ -29,7 +29,28 @@ public class CameraScoring : MonoBehaviour
 
     private void Start()
     {
+        FindViewsTextUI();
         UpdateUI();
+    }
+
+    private void FindViewsTextUI()
+    {
+        if (viewsText == null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                TextMeshProUGUI[] texts = player.GetComponentsInChildren<TextMeshProUGUI>(true);
+                foreach (TextMeshProUGUI t in texts)
+                {
+                    if (t.gameObject.name == "Views" || t.gameObject.name.Contains("Views"))
+                    {
+                        viewsText = t;
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     private void Update()
@@ -145,6 +166,8 @@ public class CameraScoring : MonoBehaviour
 
     private void UpdateUI()
     {
+        if (viewsText == null) FindViewsTextUI();
+
         if (viewsText != null)
         {
             viewsText.text = $"numero de views: {currentScore}";

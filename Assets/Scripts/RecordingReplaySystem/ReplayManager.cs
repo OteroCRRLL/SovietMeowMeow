@@ -105,6 +105,14 @@ public class ReplayManager : MonoBehaviour
         StopPlayback();
         FinalizeMissionRecording();
         allReplayObjects.Clear();
+        
+        // Buscar el UI de nuevo al cargar la escena
+        recordingIndicatorUI = null;
+        FindRecordingUI();
+        if (recordingIndicatorUI != null)
+        {
+            recordingIndicatorUI.SetActive(false);
+        }
     }
 
     private void EnsureDefaultTags()
@@ -361,27 +369,16 @@ public class ReplayManager : MonoBehaviour
         }
     }
 
-    private void Start()
-    {
-        if (recordingIndicatorUI != null) 
-        {
-            recordingIndicatorUI.SetActive(false);
-            indicatorCanvasGroup = recordingIndicatorUI.GetComponent<CanvasGroup>();
-            if (indicatorCanvasGroup == null)
-            {
-                indicatorCanvasGroup = recordingIndicatorUI.AddComponent<CanvasGroup>();
-            }
-        }
-    }
+
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.R))
         {
             string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-            if (currentScene == "Hub" || currentScene == "MainMenu")
+            if (currentScene != "Blockout" && !currentScene.StartsWith("Day_"))
             {
-                Debug.Log("Grabación desactivada en el " + currentScene);
+                Debug.Log("Grabación desactivada en la escena " + currentScene);
                 return;
             }
 
@@ -418,6 +415,15 @@ public class ReplayManager : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        FindRecordingUI();
+        if (recordingIndicatorUI != null)
+        {
+            recordingIndicatorUI.SetActive(false);
+        }
+    }
+
     public void ResumeRecording()
     {
         if (currentCapacity <= 0) return;
@@ -426,6 +432,8 @@ public class ReplayManager : MonoBehaviour
         {
             cameraAudioSource.PlayOneShot(cameraRecordingClip);
         }
+
+        FindRecordingUI();
 
         if (!hasStartedRecording)
         {
@@ -437,7 +445,11 @@ public class ReplayManager : MonoBehaviour
             // Solo limpiamos la misión en curso, no el archivo histórico por día
             // recordedSessions.Clear(); no clear to allow appending
 
-            if (recordingIndicatorUI != null) recordingIndicatorUI.SetActive(true);
+            if (recordingIndicatorUI != null) 
+            {
+                recordingIndicatorUI.SetActive(true);
+                ToggleOtherUI(true);
+            }
 
             CaptureRecordingOrigin();
             usesRelativeRecording = true;
@@ -460,7 +472,11 @@ public class ReplayManager : MonoBehaviour
             Debug.Log("---- Recording Resumed ----");
             IsRecordingGlobal = true;
 
-            if (recordingIndicatorUI != null) recordingIndicatorUI.SetActive(true);
+            if (recordingIndicatorUI != null) 
+            {
+                recordingIndicatorUI.SetActive(true);
+                ToggleOtherUI(true);
+            }
 
             foreach (var obj in allReplayObjects)
             {
@@ -475,7 +491,13 @@ public class ReplayManager : MonoBehaviour
         Debug.Log("---- Recording Paused ----");
         IsRecordingGlobal = false;
 
-        if (recordingIndicatorUI != null) recordingIndicatorUI.SetActive(false);
+        FindRecordingUI();
+
+        if (recordingIndicatorUI != null) 
+        {
+            recordingIndicatorUI.SetActive(false);
+            ToggleOtherUI(false);
+        }
 
         foreach (var obj in allReplayObjects)
         {
@@ -490,11 +512,78 @@ public class ReplayManager : MonoBehaviour
         IsRecordingGlobal = false;
         hasStartedRecording = false;
 
-        if (recordingIndicatorUI != null) recordingIndicatorUI.SetActive(false);
+        FindRecordingUI();
+
+        if (recordingIndicatorUI != null) 
+        {
+            recordingIndicatorUI.SetActive(false);
+            ToggleOtherUI(false);
+        }
 
         foreach (var obj in allReplayObjects)
         {
             if (obj != null) obj.StopRecording();
+        }
+    }
+
+    private void FindRecordingUI()
+    {
+        if (recordingIndicatorUI == null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                Transform uiTransform = player.transform.Find("Canvas/Recording");
+                if (uiTransform == null) 
+                {
+                    // Fallback to recursive search if structure is different
+                    Transform[] transforms = player.GetComponentsInChildren<Transform>(true);
+                    foreach (Transform t in transforms)
+                    {
+                        if (t.name == "Recording")
+                        {
+                            uiTransform = t;
+                            break;
+                        }
+                    }
+                }
+                
+                if (uiTransform != null)
+                {
+                    recordingIndicatorUI = uiTransform.gameObject;
+                    indicatorCanvasGroup = recordingIndicatorUI.GetComponent<CanvasGroup>();
+                    if (indicatorCanvasGroup == null)
+                    {
+                        indicatorCanvasGroup = recordingIndicatorUI.AddComponent<CanvasGroup>();
+                    }
+                }
+            }
+        }
+
+        // Siempre asegurarnos de que el panel está apagado en escenas no permitidas, o por defecto al encontrarlo
+        if (recordingIndicatorUI != null)
+        {
+            string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            if (currentScene != "Blockout" && !currentScene.StartsWith("Day_"))
+            {
+                recordingIndicatorUI.SetActive(false);
+            }
+        }
+    }
+
+    private void ToggleOtherUI(bool isRecording)
+    {
+        if (recordingIndicatorUI == null || recordingIndicatorUI.transform.parent == null) return;
+        
+        Transform parent = recordingIndicatorUI.transform.parent;
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            Transform child = parent.GetChild(i);
+            // Ignorar el propio objeto Recording y cualquier panel de pausa para no alterar su lógica
+            if (child != recordingIndicatorUI.transform && !child.name.ToLower().Contains("pause"))
+            {
+                child.gameObject.SetActive(!isRecording);
+            }
         }
     }
 
@@ -785,7 +874,11 @@ public class ReplayManager : MonoBehaviour
         IsRecordingGlobal = false;
         hasStartedRecording = false;
 
-        if (recordingIndicatorUI != null) recordingIndicatorUI.SetActive(false);
+        if (recordingIndicatorUI != null) 
+        {
+            recordingIndicatorUI.SetActive(false);
+            ToggleOtherUI(false);
+        }
 
         StopPlayback();
         ApplyPlaybackSpaceForDay(dayNumber);

@@ -8250,7 +8250,7 @@ MonoBehaviour:
   maxCapacity: 100
   currentCapacity: 100
   recordingIndicatorUI: {fileID: 0}
-  blinkSpeed: 2
+  blinkSpeed: 1
   cameraAudioSource: {fileID: 2004988429}
   cameraRecordingClip: {fileID: 8300000, guid: 9d3cf7a2ac291ec4eb565fc8b0dbb57c, type: 3}
 --- !u!4 &2004988428
