@@ -44,13 +44,13 @@ public class SoldierController : MonoBehaviour
 
     private void Start()
     {
-        // 1. COMPROBACIÓN CRÍTICA: ¿Están usando el mismo AudioSource?
+        
         if (audioSource != null && voiceAudioSource != null && audioSource == voiceAudioSource)
         {
-            Debug.LogError("¡ERROR GRAVE! El arma y la voz están usando el MISMO AudioSource en el Inspector. El arma silenciará las voces. Asigna componentes diferentes.");
+            Debug.LogError("El arma y la voz están usando el MISMO AudioSource en el Inspector. El arma silenciará las voces. Asigna componentes diferentes.");
         }
 
-        // Si faltan componentes, los creamos
+        
         if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
         if (voiceAudioSource == null) voiceAudioSource = gameObject.AddComponent<AudioSource>();
 

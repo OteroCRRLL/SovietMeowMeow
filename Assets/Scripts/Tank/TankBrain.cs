@@ -23,7 +23,19 @@ public class TankBrain : MonoBehaviour
     public AudioClip tankClip;
     public float tankLoopStartTime = 21f;
     public float tankLoopEndTime = 35f;
+    public AudioClip explosionImpactClip;
 
+    [Header("Visual Effects")]
+    public GameObject explosionPrefab;
+
+    [Header("Explosion Settings")]
+    public float explosionDamage = 150f;
+    public float explosionRadius = 10f;
+
+    [Header("Camera Shake Settings")]
+    public float shakeRadius = 40f;
+    public float shakeDuration = 0.8f;
+    public float shakeIntensity = 0.6f;
 
     private TankState currentState = TankState.Patrol;
     public TankState CurrentState => currentState;
@@ -33,10 +45,12 @@ public class TankBrain : MonoBehaviour
     private float lostTargetTimer = 0f;
     private float shootTimer = 0f;
     private HealthSystem health;
+    private FactionIdentity myFaction;
 
     // Start is called before the first frame update
     void Start()
     {
+        myFaction = GetComponent<FactionIdentity>();
         if (tankAudioSource == null) tankAudioSource = GetComponent<AudioSource>();
         if (tankAudioSource == null) tankAudioSource = gameObject.AddComponent<AudioSource>();
 
@@ -298,10 +312,47 @@ public class TankBrain : MonoBehaviour
         controller.SetPatrolAnimation(false);
         
         if (sensor != null) sensor.enabled = false;
-        
-        // Destruimos el tanque después de un tiempo para que el cadáver no se quede para siempre
-        // También puedes poner aquí instanciar una explosión visual o un modelo de tanque destruido
-        StartCoroutine(DeactivateAfterDelay(15f));
+
+        // Daño en área (Explosión del tanque)
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, explosionRadius);
+        System.Collections.Generic.HashSet<HealthSystem> damagedTargets = new System.Collections.Generic.HashSet<HealthSystem>();
+
+        foreach (Collider hit in hitColliders)
+        {
+            FactionIdentity hitFaction = hit.GetComponentInParent<FactionIdentity>();
+            
+            // Fuego amigo: el tanque soviético no explota a otros soviéticos (opcional)
+            if (hitFaction != null && myFaction != null && !myFaction.IsEnemy(hitFaction.myFaction)) continue;
+
+            HealthSystem targetHealth = hit.GetComponentInParent<HealthSystem>();
+            if (targetHealth != null && !targetHealth.IsDead && !damagedTargets.Contains(targetHealth))
+            {
+                targetHealth.TakeDamage(explosionDamage);
+                damagedTargets.Add(targetHealth);
+            }
+        }
+
+        if (explosionImpactClip != null)
+        {
+            AudioSource.PlayClipAtPoint(explosionImpactClip, transform.position);
+        }
+
+        if (explosionPrefab != null)
+        {
+            Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+        }
+
+        if (CameraController.instance != null)
+        {
+            float distToCamera = Vector3.Distance(transform.position, CameraController.instance.transform.position);
+            if (distToCamera <= shakeRadius)
+            {
+                CameraController.instance.ShakeCamera(shakeDuration, shakeIntensity);
+            }
+        }
+
+        // Destruimos el tanque al instante si explota
+        gameObject.SetActive(false);
     }
 
     private System.Collections.IEnumerator DeactivateAfterDelay(float delay)

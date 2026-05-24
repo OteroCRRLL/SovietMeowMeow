@@ -19,6 +19,11 @@ public class DroneBrain : MonoBehaviour
     [Header("Visual Effects")]
     public GameObject explosionPrefab;
 
+    [Header("Camera Shake Settings")]
+    public float shakeRadius = 30f;
+    public float shakeDuration = 0.6f;
+    public float shakeIntensity = 0.4f;
+
     [Header("Flight Settings")]
     public float patrolRadius = 30f;
     public float patrolSpeed = 6f;
@@ -380,6 +385,15 @@ public class DroneBrain : MonoBehaviour
         if (explosionPrefab != null)
         {
             Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+        }
+
+        if (CameraController.instance != null)
+        {
+            float distToCamera = Vector3.Distance(transform.position, CameraController.instance.transform.position);
+            if (distToCamera <= shakeRadius)
+            {
+                CameraController.instance.ShakeCamera(shakeDuration, shakeIntensity);
+            }
         }
 
         gameObject.SetActive(false);

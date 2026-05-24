@@ -87,6 +87,14 @@ MonoBehaviour:
   tankClip: {fileID: 8300000, guid: 13ec98cbe556e2f46b7c6331119a2c5e, type: 3}
   tankLoopStartTime: 21
   tankLoopEndTime: 35
+  explosionImpactClip: {fileID: 8300000, guid: ee6ed1414bc7e43478591df8622ab13e, type: 3}
+  explosionPrefab: {fileID: 9111320563476075686, guid: c6fb71e58ec36784687d958bc39de3f2,
+    type: 3}
+  explosionDamage: 150
+  explosionRadius: 10
+  shakeRadius: 150
+  shakeDuration: 0.8
+  shakeIntensity: 0.6
 --- !u!114 &7757151659342451108
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -178,9 +186,9 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: 13ec98cbe556e2f46b7c6331119a2c5e, type: 3}
+  m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 0.267
+  m_Volume: 0.383
   m_Pitch: 1
   Loop: 1
   Mute: 0

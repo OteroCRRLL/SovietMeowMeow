@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices.ComTypes;
 using UnityEngine;
@@ -21,6 +21,17 @@ public class CameraController : MonoBehaviour
     [Tooltip("The input for looking around")]
     public InputAction lookInput;
 
+    public static CameraController instance;
+
+    private float shakeDuration = 0f;
+    private float shakeMagnitude = 0f;
+    private Vector3 originalLocalPos;
+
+    private void Awake()
+    {
+        if (instance == null) instance = this;
+    }
+
     /// <summary>
     /// Standard Unity function called whenever the attached gameobject is enabled
     /// </summary>
@@ -40,6 +51,10 @@ public class CameraController : MonoBehaviour
     void Start()
     {
         SetUpCamera();
+        if (controlledCamera != null)
+        {
+            originalLocalPos = controlledCamera.transform.localPosition;
+        }
     }
 
     // Wait this many frames before starting to process the camera rotation
@@ -58,7 +73,30 @@ public class CameraController : MonoBehaviour
             return;
         }
         ProcessVerticalRotation();
+        ProcessCameraShake();
         // NOTE: Horizontal rotation is handled within the PlayerController script.
+    }
+
+    private void ProcessCameraShake()
+    {
+        if (controlledCamera == null) return;
+
+        if (shakeDuration > 0)
+        {
+            controlledCamera.transform.localPosition = originalLocalPos + Random.insideUnitSphere * shakeMagnitude;
+            shakeDuration -= Time.deltaTime;
+        }
+        else
+        {
+            shakeDuration = 0f;
+            controlledCamera.transform.localPosition = originalLocalPos;
+        }
+    }
+
+    public void ShakeCamera(float duration, float magnitude)
+    {
+        shakeDuration = duration;
+        shakeMagnitude = magnitude;
     }
 
     /// <summary>

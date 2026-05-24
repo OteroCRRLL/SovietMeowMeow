@@ -17,6 +17,11 @@ public class TankBullets : MonoBehaviour
     [Header("Visual Effects")]
     public GameObject explosionPrefab;
 
+    [Header("Camera Shake Settings")]
+    public float shakeRadius = 25f;
+    public float shakeDuration = 0.5f;
+    public float shakeIntensity = 0.3f;
+
     [Header("Filter")]
     public List<string> collisionTags = new List<string>();
     public List<string> targetTags = new List<string>(); // Mantenemos la lista por si quieres explotar barriles o cosas sin facción
@@ -110,6 +115,15 @@ public class TankBullets : MonoBehaviour
         if (explosionPrefab != null)
         {
             Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+        }
+
+        if (CameraController.instance != null)
+        {
+            float distToCamera = Vector3.Distance(transform.position, CameraController.instance.transform.position);
+            if (distToCamera <= shakeRadius)
+            {
+                CameraController.instance.ShakeCamera(shakeDuration, shakeIntensity);
+            }
         }
 
         Destroy(gameObject); // Destruye la bala
