@@ -5,7 +5,7 @@ using UnityEngine;
 public class TankSensor : MonoBehaviour
 {
     [Header("Detection settings")]
-    public float DetectRange = 15f;
+    public float DetectRange = 40f;
     public Transform visionPoint;
     public LayerMask detectableLayers;
 
@@ -22,8 +22,6 @@ public class TankSensor : MonoBehaviour
 
     private float nextScanTime = 0f;
     
-    // Usamos un array pre-asignado para OverlapSphereNonAlloc (cero Garbage Collection)
-    private Collider[] collidersBuffer = new Collider[20]; 
     private FactionIdentity myFaction;
 
     private void Start()
@@ -43,13 +41,11 @@ public class TankSensor : MonoBehaviour
 
         nextScanTime = Time.time + (1f / scanFrequency);
 
-        // 1. Detección espacial rápida (Esfera invisible, sin coste de raycasts múltiples)
-        int numColliders = Physics.OverlapSphereNonAlloc(visionPoint.position, DetectRange, collidersBuffer, detectableLayers);
+        // 1. Detección espacial rápida (Usamos OverlapSphere para evitar perder al jugador si hay muchos objetos)
+        Collider[] colliders = Physics.OverlapSphere(visionPoint.position, DetectRange, detectableLayers);
 
-        for (int i = 0; i < numColliders; i++)
+        foreach (Collider col in colliders)
         {
-            Collider col = collidersBuffer[i];
-            
             // Usar Facciones en lugar de Tags
             FactionIdentity otherFaction = col.GetComponentInParent<FactionIdentity>();
             if (otherFaction == null || !myFaction.IsEnemy(otherFaction.myFaction)) continue;

@@ -165,11 +165,20 @@ public class SoldierController : MonoBehaviour
         }
     }
 
+    private string currentAnimState = "";
+
     public void SetAnimation(string stateName)
     {
-        if (anim != null)
+        // Si el estado es Walk, usamos la animación de Run
+        if (stateName == "Walk")
         {
-            // Placeholder animaciones
+            stateName = "Run";
+        }
+
+        if (anim != null && currentAnimState != stateName)
+        {
+            anim.CrossFadeInFixedTime(stateName, 0.1f);
+            currentAnimState = stateName;
         }
     }
 

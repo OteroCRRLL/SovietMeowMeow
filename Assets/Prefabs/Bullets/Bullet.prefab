@@ -159,7 +159,7 @@ MonoBehaviour:
   explosionImpactClip: {fileID: 8300000, guid: ee6ed1414bc7e43478591df8622ab13e, type: 3}
   explosionPrefab: {fileID: 1998830269065593993, guid: b70fbea4bc8994749ba52e4f560f9f28,
     type: 3}
-  shakeRadius: 150
+  shakeRadius: 40
   shakeDuration: 0.5
   shakeIntensity: 0.3
   collisionTags:

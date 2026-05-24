@@ -92,7 +92,7 @@ MonoBehaviour:
     type: 3}
   explosionDamage: 150
   explosionRadius: 10
-  shakeRadius: 150
+  shakeRadius: 40
   shakeDuration: 0.8
   shakeIntensity: 0.6
 --- !u!114 &7757151659342451108
@@ -290,7 +290,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &7337489247051570352
 RectTransform:
   m_ObjectHideFlags: 0
@@ -595,7 +595,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 89fa853c19662f3438f4ba97cf5bd8d0, type: 2}
+  - {fileID: 2100000, guid: 9cb0aed7a11c5f5469eaf126dbdd37f7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -859,7 +859,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 89fa853c19662f3438f4ba97cf5bd8d0, type: 2}
+  - {fileID: 2100000, guid: 9cb0aed7a11c5f5469eaf126dbdd37f7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1017,7 +1017,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 89fa853c19662f3438f4ba97cf5bd8d0, type: 2}
+  - {fileID: 2100000, guid: 9cb0aed7a11c5f5469eaf126dbdd37f7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
