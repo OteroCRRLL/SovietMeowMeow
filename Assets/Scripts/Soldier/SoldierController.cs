@@ -69,10 +69,37 @@ public class SoldierController : MonoBehaviour
         nextVoiceTime = Time.time + Random.Range(minMaxVoiceInterval.x, minMaxVoiceInterval.y);
     }
 
+    private bool isExplicitlyRotating = false;
+
     private void Update()
     {
         UpdateWeaponAudio();
         UpdateVoiceAudio();
+
+        // Si no se le ha ordenado mirar a un objetivo específico este frame, alineamos el cuerpo con el movimiento
+        if (!isExplicitlyRotating && body != null)
+        {
+            body.localRotation = Quaternion.Slerp(body.localRotation, Quaternion.identity, Time.deltaTime * rotationSpeed);
+        }
+        
+        // Reseteamos el flag para el siguiente frame
+        isExplicitlyRotating = false;
+    }
+
+    public void RotateTowards(Transform target)
+    {
+        if (target == null || body == null) return;
+
+        isExplicitlyRotating = true;
+
+        Vector3 direction = (target.position - body.position).normalized;
+        direction.y = 0;
+
+        if (direction != Vector3.zero)
+        {
+            Quaternion lookRotation = Quaternion.LookRotation(direction);
+            body.rotation = Quaternion.Slerp(body.rotation, lookRotation, Time.deltaTime * rotationSpeed);
+        }
     }
 
     private void UpdateVoiceAudio()
@@ -148,20 +175,6 @@ public class SoldierController : MonoBehaviour
             {
                 audioSource.Stop();
             }
-        }
-    }
-
-    public void RotateTowards(Transform target)
-    {
-        if (target == null || body == null) return;
-
-        Vector3 direction = (target.position - body.position).normalized;
-        direction.y = 0;
-
-        if (direction != Vector3.zero)
-        {
-            Quaternion lookRotation = Quaternion.LookRotation(direction);
-            body.rotation = Quaternion.Slerp(body.rotation, lookRotation, Time.deltaTime * rotationSpeed);
         }
     }
 
