@@ -5,7 +5,8 @@ public class LevelManager : MonoBehaviour
     public static LevelManager instance;
 
     [Header("Level Settings")]
-    public Transform playerSpawnPoint;
+    [Tooltip("Lista de posibles puntos de spawn para el jugador.")]
+    public Transform[] playerSpawnPoints;
 
     private void Awake()
     {
@@ -21,14 +22,27 @@ public class LevelManager : MonoBehaviour
 
     private void Start()
     {
-        // Al empezar el nivel, instanciar al jugador.
-        if (GameManager.instance != null && playerSpawnPoint != null)
+        // Seleccionar un spawn random
+        Transform selectedSpawn = null;
+        if (playerSpawnPoints != null && playerSpawnPoints.Length > 0)
         {
-            GameManager.instance.SpawnPlayer(playerSpawnPoint);
+            int randomIndex = UnityEngine.Random.Range(0, playerSpawnPoints.Length);
+            selectedSpawn = playerSpawnPoints[randomIndex];
+            Debug.Log($"LevelManager: Seleccionado spawn random {randomIndex} de {playerSpawnPoints.Length}.");
         }
         else
         {
-            Debug.LogWarning("LevelManager: Faltan referencias para spawnear al jugador.");
+            Debug.LogWarning("LevelManager: La lista de playerSpawnPoints está vacía o es null.");
+        }
+
+        // Al empezar el nivel, instanciar al jugador.
+        if (GameManager.instance != null && selectedSpawn != null)
+        {
+            GameManager.instance.SpawnPlayer(selectedSpawn);
+        }
+        else
+        {
+            Debug.LogWarning("LevelManager: Faltan referencias para spawnear al jugador (GameManager o spawn seleccionado).");
         }
     }
 

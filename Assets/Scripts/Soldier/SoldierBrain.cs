@@ -26,6 +26,10 @@ public class SoldierBrain : MonoBehaviour
     
     [Header("Hunt Player Settings")]
     public float catchDistance = 2.0f; // Distancia para robar la cámara
+    public float maxStamina = 5.0f; // Segundos que puede correr persiguiendo
+    public float staminaRecoveryTime = 2.0f; // Segundos que tiene que pararse a recuperar
+    private float currentStamina;
+    private bool isExhausted = false;
 
     private SoldierState currentState = SoldierState.Patrol;
     public SoldierState CurrentState => currentState;
@@ -71,6 +75,7 @@ public class SoldierBrain : MonoBehaviour
     private void Start()
     {
         currentAmmo = maxAmmo;
+        currentStamina = maxStamina;
 
         // Auto-asignar referencias por si se te olvidó arrastrarlas en el Inspector del Prefab
         if (sensor == null) sensor = GetComponentInChildren<SoldierSensor>();
@@ -252,6 +257,8 @@ public class SoldierBrain : MonoBehaviour
                 
                 // Retomar estado base
                 currentState = isLeader ? SoldierState.Patrol : SoldierState.FollowLeader;
+                isExhausted = false;
+                currentStamina = maxStamina;
                 if (agent != null && agent.isOnNavMesh) 
                 {
                     agent.isStopped = false;
@@ -672,6 +679,27 @@ public class SoldierBrain : MonoBehaviour
     private void UpdateHuntPlayer()
     {
         if (currentTarget == null) return;
+
+        if (isExhausted)
+        {
+            if (agent != null && agent.isOnNavMesh) agent.isStopped = true;
+            controller.SetAnimation("Idle"); // Tomando aliento
+            currentStamina += Time.deltaTime;
+            if (currentStamina >= staminaRecoveryTime)
+            {
+                isExhausted = false;
+                currentStamina = maxStamina;
+            }
+            return;
+        }
+
+        currentStamina -= Time.deltaTime;
+        if (currentStamina <= 0f)
+        {
+            isExhausted = true;
+            currentStamina = 0f;
+            return;
+        }
 
         if (agent != null && agent.isOnNavMesh)
         {

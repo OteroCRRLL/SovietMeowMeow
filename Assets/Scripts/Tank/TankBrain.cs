@@ -14,7 +14,7 @@ public class TankBrain : MonoBehaviour
     public Transform[] waypoints;
 
     [Header("Configuration")]
-    public float lockTime = 1.0f;
+    public float lockTime = 2.5f;
     public float targetLossGraceTime = 0.5f; //Time to wait before continue patrolling
     public float shootDuration = 0.5f; // Tiempo que el tanque se queda en estado 'Shoot' tras disparar
 
