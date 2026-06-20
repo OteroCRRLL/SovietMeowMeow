@@ -323,7 +323,7 @@ MonoBehaviour:
   visionPoint: {fileID: 1349021145391235167}
   detectableLayers:
     serializedVersion: 2
-    m_Bits: 6143
+    m_Bits: 38911
   angleDifference: 120
   scanFrequency: 5
   sweepSpeed: 60
@@ -381,6 +381,8 @@ MonoBehaviour:
   reloadTime: 2
   targetMemoryTime: 4
   catchDistance: 2
+  maxStamina: 5
+  staminaRecoveryTime: 2
 --- !u!54 &8993837954757586420
 Rigidbody:
   m_ObjectHideFlags: 0

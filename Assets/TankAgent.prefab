@@ -940,7 +940,7 @@ MonoBehaviour:
   visionPoint: {fileID: 7490931383775867468}
   detectableLayers:
     serializedVersion: 2
-    m_Bits: 6143
+    m_Bits: 38911
   angleDifference: 10
   targetTags:
   - Player
