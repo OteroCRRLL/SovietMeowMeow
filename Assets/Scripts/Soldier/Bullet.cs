@@ -6,6 +6,8 @@ public class Bullet : MonoBehaviour
     [Header("Bullet Settings")]
     public float lifeTime = 3f;
     public float damage = 20f;
+
+   
     
     [Header("Filter")]
     public List<string> targetTags = new List<string>();
@@ -49,12 +51,12 @@ public class Bullet : MonoBehaviour
 
         if (health != null)
         {
-            // Si usamos target tags (como el TankBullet), comprobamos. Si la lista está vacía, dañamos a cualquier enemigo por defecto.
+            // Si se usan target tags (como el TankBullet), comprobamos. Si la lista está vacía, dañamos a cualquier enemigo por defecto.
             if (targetTags.Count == 0 || targetTags.Contains(hitObj.tag) || hitObj.CompareTag("Player") || hitFaction != null)
             {
                 health.TakeDamage(damage);
                 
-                // Si la bala impacta a alguien y nosotros tenemos facción, le avisamos de quién le disparó (si es que está vivo y es un soldado o dron)
+                
                 if (shooterFaction != null)
                 {
                     SoldierBrain hitBrain = hitObj.GetComponentInParent<SoldierBrain>();
@@ -75,8 +77,9 @@ public class Bullet : MonoBehaviour
                 }
             }
         }
-        
+
         // Destruir la bala al chocar contra lo que sea (suelo, paredes, enemigos)
+       
         Destroy(gameObject);
     }
 }

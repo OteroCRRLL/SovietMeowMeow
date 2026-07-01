@@ -62,6 +62,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -170,4 +173,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lifeTime: 3
   damage: 20
+  impactVFXPrefab: {fileID: 9181050346676800846, guid: ad1270e569b7d754ab503dac724fb170,
+    type: 3}
   targetTags: []
