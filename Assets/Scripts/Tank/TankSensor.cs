@@ -141,12 +141,15 @@ public class TankSensor : MonoBehaviour
             {
                 return true;
             }
-            
+
             // Chocó contra un muro u otro obstáculo
             return false;
         }
-        
-        return false;
+
+        // El rayo no golpeó nada antes de llegar al objetivo (p.ej. su collider es un trigger):
+        // no hay nada bloqueando, así que seguimos viéndolo. Sin este caso el tanque perdía el
+        // "lock" del jugador de forma intermitente aunque nada lo estuviera tapando.
+        return true;
     }
 
     // Método extra para ver el rango de visión en el editor fácilmente

@@ -202,6 +202,7 @@ public class PCUIManager : MonoBehaviour
         if (playerController != null) playerController.enabled = true;
         if (cameraController != null) cameraController.enabled = true;
         
+
         // Restaurar HUD del jugador
         if (playerHUDCanvas != null)
         {
@@ -209,8 +210,7 @@ public class PCUIManager : MonoBehaviour
             playerHUDCanvas = null;
         }
 
-        // Retraso para evitar interactuar en el mismo frame
-        Invoke(nameof(ReenableInteraction), 0.1f);
+        
     }
 
     private void ReenableInteraction()

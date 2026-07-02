@@ -92,24 +92,22 @@ public class SoldierSensor : MonoBehaviour
             if (angleToTarget <= angleDifference / 2f)
             {
                 float distanceToTarget = Vector3.Distance(visionPoint.position, targetPosition);
-                
-                // Raycast para comprobar paredes
-                if (Physics.Raycast(visionPoint.position, directionToTarget, out RaycastHit hit, distanceToTarget, detectableLayers, QueryTriggerInteraction.Ignore))
+
+                // Raycast para comprobar paredes (recorre todos los impactos, no solo el primero,
+                // para no bloquearse cuando un aliado se cruza en el camino antes del objetivo real)
+                if (IsLineClear(visionPoint.position, directionToTarget, distanceToTarget, col.transform.root))
                 {
-                    if (hit.transform.root == col.transform.root)
+                    if (otherFaction.myFaction == FactionType.Player)
                     {
-                        if (otherFaction.myFaction == FactionType.Player)
+                        playerTarget = col.transform;
+                    }
+                    else
+                    {
+                        // Si es de otra facción, calculamos el más cercano
+                        if (distanceToTarget < closestEnemyDist)
                         {
-                            playerTarget = col.transform;
-                        }
-                        else
-                        {
-                            // Si es de otra facción, calculamos el más cercano
-                            if (distanceToTarget < closestEnemyDist)
-                            {
-                                closestEnemyDist = distanceToTarget;
-                                bestEnemyTarget = col.transform;
-                            }
+                            closestEnemyDist = distanceToTarget;
+                            bestEnemyTarget = col.transform;
                         }
                     }
                 }
@@ -133,13 +131,29 @@ public class SoldierSensor : MonoBehaviour
 
         Vector3 directionToTarget = (targetPosition - visionPoint.position).normalized;
 
-        if (Physics.Raycast(visionPoint.position, directionToTarget, out RaycastHit hit, DetectRange, detectableLayers, QueryTriggerInteraction.Ignore))
+        return IsLineClear(visionPoint.position, directionToTarget, distanceToTarget, target.root);
+    }
+
+    /// <summary>
+    /// Comprueba si hay línea de visión clara hacia un objetivo, recorriendo TODOS los impactos
+    /// del rayo (no solo el primero). Con un único Raycast, cualquier aliado, cadáver u otro
+    /// personaje que se cruce en el camino antes de llegar al objetivo hace fallar la detección
+    /// aunque el objetivo esté a la vista; por eso comprobamos el orden real de los impactos.
+    /// </summary>
+    private bool IsLineClear(Vector3 origin, Vector3 direction, float distance, Transform targetRoot)
+    {
+        RaycastHit[] hits = Physics.RaycastAll(origin, direction, distance + 0.5f, detectableLayers, QueryTriggerInteraction.Ignore);
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        foreach (RaycastHit hit in hits)
         {
-            if (hit.transform.root == target.root)
-            {
-                return true;
-            }
+            if (hit.transform.root == transform.root) continue; // Ignorar a nosotros mismos
+
+            // El primer impacto (que no seamos nosotros) debe ser el objetivo; si es otra cosa, bloquea
+            return hit.transform.root == targetRoot;
         }
-        return false;
+
+        // El rayo no golpeó nada antes del objetivo (p.ej. su collider es un trigger)
+        return true;
     }
 }
