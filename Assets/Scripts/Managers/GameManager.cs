@@ -349,6 +349,24 @@ public class GameManager : MonoBehaviour
                         btn.onClick.RemoveAllListeners();
                         btn.onClick.AddListener(SaveGame);
                     }
+                    else if (btn.gameObject.name == "ControlsGameButton")
+                    {
+                        PauseControlsPanel controlsPanel = pauseMenuUI.GetComponentInChildren<PauseControlsPanel>(true);
+                        if (controlsPanel != null)
+                        {
+                            btn.onClick.RemoveAllListeners();
+                            btn.onClick.AddListener(controlsPanel.ShowControls);
+                        }
+                    }
+                    else if (btn.gameObject.name == "ReturnGameButton" || btn.gameObject.name == "ReturnButton")
+                    {
+                        PauseControlsPanel controlsPanel = pauseMenuUI.GetComponentInChildren<PauseControlsPanel>(true);
+                        if (controlsPanel != null)
+                        {
+                            btn.onClick.RemoveAllListeners();
+                            btn.onClick.AddListener(controlsPanel.HideControls);
+                        }
+                    }
                 }
                 break;
             }

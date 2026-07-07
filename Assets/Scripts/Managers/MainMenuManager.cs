@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// Script específico para la escena del Menú Principal.
@@ -15,6 +16,29 @@ public class MainMenuManager : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+
+        SetupControlsButtons();
+    }
+
+    private void SetupControlsButtons()
+    {
+        PauseControlsPanel controlsPanel = FindObjectOfType<PauseControlsPanel>(true);
+        if (controlsPanel == null) return;
+
+        Button[] buttons = FindObjectsOfType<Button>(true);
+        foreach (Button btn in buttons)
+        {
+            if (btn.gameObject.name == "ControlsGameButton")
+            {
+                btn.onClick.RemoveAllListeners();
+                btn.onClick.AddListener(controlsPanel.ShowControls);
+            }
+            else if (btn.gameObject.name == "ReturnGameButton" || btn.gameObject.name == "ReturnButton")
+            {
+                btn.onClick.RemoveAllListeners();
+                btn.onClick.AddListener(controlsPanel.HideControls);
+            }
+        }
     }
 
     /// <summary>
