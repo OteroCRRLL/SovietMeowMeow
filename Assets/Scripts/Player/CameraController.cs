@@ -135,7 +135,7 @@ public class CameraController : MonoBehaviour
         }
 
         // clamp the rotation 360 - 270 is up 0 - 90 is down
-        // Because of the way eular angles work with Unity's rotations we have to act differently when clamping the rotation
+        // Because of the way euler angles work with Unity's rotations, clamping requires different handling here
         if (newXRotation < 270 && newXRotation >= 180)
         {
             newXRotation = 270;

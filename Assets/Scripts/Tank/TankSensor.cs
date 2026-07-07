@@ -41,7 +41,7 @@ public class TankSensor : MonoBehaviour
 
         nextScanTime = Time.time + (1f / scanFrequency);
 
-        // 1. Detección espacial rápida (Usamos OverlapSphere para evitar perder al jugador si hay muchos objetos)
+        // 1. Detección espacial rápida (OverlapSphere evita perder al jugador si hay muchos objetos)
         Collider[] colliders = Physics.OverlapSphere(visionPoint.position, DetectRange, detectableLayers);
 
         foreach (Collider col in colliders)
@@ -58,7 +58,7 @@ public class TankSensor : MonoBehaviour
             Vector3 targetPosition = col.bounds.center;
             Vector3 directionToTarget = (targetPosition - visionPoint.position).normalized;
 
-            // Aplanamos los vectores para que la diferencia de altura (jugador más bajito o muy cerca) no nos saque del cono de visión
+            // Vectores aplanados para que la diferencia de altura (jugador más bajo o muy cerca) no saque el objetivo del cono de visión
             Vector3 flatForward = visionPoint.forward;
             flatForward.y = 0;
             flatForward.Normalize();
@@ -81,9 +81,9 @@ public class TankSensor : MonoBehaviour
                 bool hitWall = false;
                 foreach (RaycastHit hit in hits)
                 {
-                    // Ignorar a nosotros mismos
+                    // Ignora al propio emisor del rayo
                     if (hit.collider.transform.root == transform.root) continue;
-                    
+
                     FactionIdentity hitFaction = hit.collider.GetComponentInParent<FactionIdentity>();
                     if (hit.collider.transform.root == col.transform.root || (hitFaction != null && myFaction.IsEnemy(hitFaction.myFaction)))
                     {
@@ -92,13 +92,13 @@ public class TankSensor : MonoBehaviour
                     }
                     else
                     {
-                        // Si chocamos con algo que no somos nosotros ni el objetivo/enemigo, asumimos que es un muro
+                        // Si el impacto no es el propio emisor ni el objetivo/enemigo, se asume que es un muro
                         hitWall = true;
-                        break; 
+                        break;
                     }
                 }
-                
-                // Si el raycast no chocó con ningún muro, consideramos que lo vemos (útil si el raycast pasa el collider por poco)
+
+                // Si el raycast no chocó con ningún muro, se considera visible (útil si el raycast pasa el collider por poco)
                 if (!hitWall)
                 {
                     Debug.DrawRay(visionPoint.position, directionToTarget * distanceToTarget, Color.green, 1f / scanFrequency);
@@ -122,12 +122,12 @@ public class TankSensor : MonoBehaviour
 
         float distanceToTarget = Vector3.Distance(visionPoint.position, targetPosition);
         
-        // Si se ha alejado demasiado, ya no lo vemos
+        // Si se ha alejado demasiado, deja de ser visible
         if (distanceToTarget > DetectRange) return false;
 
         Vector3 directionToTarget = (targetPosition - visionPoint.position).normalized;
 
-        // Lanzamos un raycast directo al objetivo para mantener el "lock"
+        // Raycast directo al objetivo para mantener el "lock"
         RaycastHit[] hits = Physics.RaycastAll(visionPoint.position, directionToTarget, DetectRange, detectableLayers, QueryTriggerInteraction.Ignore);
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
@@ -147,7 +147,7 @@ public class TankSensor : MonoBehaviour
         }
 
         // El rayo no golpeó nada antes de llegar al objetivo (p.ej. su collider es un trigger):
-        // no hay nada bloqueando, así que seguimos viéndolo. Sin este caso el tanque perdía el
+        // no hay nada bloqueando, así que sigue siendo visible. Sin este caso el tanque perdía el
         // "lock" del jugador de forma intermitente aunque nada lo estuviera tapando.
         return true;
     }

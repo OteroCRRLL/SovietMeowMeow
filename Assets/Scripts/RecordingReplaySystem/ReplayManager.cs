@@ -442,7 +442,7 @@ public class ReplayManager : MonoBehaviour
             hasStartedRecording = true;
             // currentRecordedTime = 0f; no reset to maintain timeline
             
-            // Solo limpiamos la misión en curso, no el archivo histórico por día
+            // Solo se limpia la misión en curso, no el archivo histórico por día
             // recordedSessions.Clear(); no clear to allow appending
 
             if (recordingIndicatorUI != null) 
@@ -560,7 +560,7 @@ public class ReplayManager : MonoBehaviour
             }
         }
 
-        // Siempre asegurarnos de que el panel está apagado en escenas no permitidas, o por defecto al encontrarlo
+        // El panel debe quedar apagado en escenas no permitidas, o por defecto al encontrarlo
         if (recordingIndicatorUI != null)
         {
             string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;

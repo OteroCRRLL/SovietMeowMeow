@@ -11,10 +11,16 @@ public class CameraScoring : MonoBehaviour
     public int pointsPerTarget = 100;
     public List<string> targetTags = new List<string>();
 
+    [Header("Bonus por Combate")]
+    [Tooltip("Multiplicador extra aplicado a la puntuación de un objetivo mientras está activamente en combate (disparando, apuntando, en kamikaze...). 1 = +100% de bonus.")]
+    public float combatBonusMultiplier = 1f;
+
     [Header("UI")]
     public TextMeshProUGUI viewsText;
 
     private int currentScore = 0;
+    private int currentBaseScore = 0;
+    private int currentCombatBonusScore = 0;
     private Dictionary<GameObject, float> recordedObjectsTime = new Dictionary<GameObject, float>();
     private Camera mainCamera;
 
@@ -93,7 +99,7 @@ public class CameraScoring : MonoBehaviour
                             // A veces el raycast golpea la propia cámara o al jugador si la cámara está dentro de su collider
                             if (hit.transform.root == transform.root)
                             {
-                                // Lanzamos otro raycast ignorando al jugador
+                                // Se lanza otro raycast ignorando al jugador
                                 RaycastHit[] hits = Physics.RaycastAll(transform.position, dirToTarget.normalized, distanceToTarget, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
                                 System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
                                 
@@ -105,7 +111,7 @@ public class CameraScoring : MonoBehaviour
                                     {
                                         currentlyVisible.Add(col.gameObject);
                                     }
-                                    break; // El primer objeto que no seamos nosotros determinará si hay visión o no
+                                    break; // El primer objeto que no sea la propia cámara/jugador determina si hay visión o no
                                 }
                             }
                         }
@@ -145,23 +151,65 @@ public class CameraScoring : MonoBehaviour
 
     private void CalculateScore()
     {
-        int newScore = 0;
+        int newBaseScore = 0;
+        int newCombatBonusScore = 0;
+
         foreach (var kvp in recordedObjectsTime)
         {
+            GameObject obj = kvp.Key;
             float timeVisible = kvp.Value;
 
             // Se necesita un mnimo de 2 segundos para dar puntuacin
-            if (timeVisible >= 2f)
+            if (timeVisible < 2f) continue;
+            if (obj == null) continue;
+
+            int baseValue = (int)(pointsPerTarget * timeVisible);
+            newBaseScore += baseValue;
+
+            // Bonus por grabar el objetivo mientras está activamente en combate,
+            // en vez de solo grabar cantidad de enemigos parados en pantalla.
+            if (IsInCombat(obj))
             {
-                newScore += (int)(pointsPerTarget * timeVisible);
+                newCombatBonusScore += (int)(baseValue * combatBonusMultiplier);
             }
         }
+
+        int newScore = newBaseScore + newCombatBonusScore;
 
         if (newScore != currentScore)
         {
             currentScore = newScore;
+            currentBaseScore = newBaseScore;
+            currentCombatBonusScore = newCombatBonusScore;
             UpdateUI();
         }
+    }
+
+    /// <summary>
+    /// Comprueba si el objetivo grabado está activamente en combate (disparando, apuntando,
+    /// persiguiendo, en kamikaze...) leyendo el estado público de su IA, sin tocar esos scripts.
+    /// </summary>
+    private bool IsInCombat(GameObject obj)
+    {
+        SoldierBrain soldier = obj.GetComponentInParent<SoldierBrain>();
+        if (soldier != null)
+        {
+            return soldier.CurrentState == SoldierState.Combat || soldier.CurrentState == SoldierState.HuntPlayer;
+        }
+
+        DroneBrain drone = obj.GetComponentInParent<DroneBrain>();
+        if (drone != null)
+        {
+            return drone.CurrentState == DroneState.Locking || drone.CurrentState == DroneState.Kamikaze;
+        }
+
+        TankBrain tank = obj.GetComponentInParent<TankBrain>();
+        if (tank != null)
+        {
+            return tank.CurrentState == TankState.Lock || tank.CurrentState == TankState.Shoot;
+        }
+
+        return false;
     }
 
     private void UpdateUI()
@@ -170,7 +218,7 @@ public class CameraScoring : MonoBehaviour
 
         if (viewsText != null)
         {
-            viewsText.text = $"numero de views: {currentScore}";
+            viewsText.text = $"Views: {currentScore}";
         }
     }
 
@@ -182,6 +230,8 @@ public class CameraScoring : MonoBehaviour
     public void ResetScore()
     {
         currentScore = 0;
+        currentBaseScore = 0;
+        currentCombatBonusScore = 0;
         recordedObjectsTime.Clear();
         UpdateUI();
         Debug.Log("Puntuacin reiniciada para un nuevo despliegue.");
@@ -190,5 +240,15 @@ public class CameraScoring : MonoBehaviour
     public int GetCurrentScore()
     {
         return currentScore;
+    }
+
+    public int GetBaseScore()
+    {
+        return currentBaseScore;
+    }
+
+    public int GetCombatBonusScore()
+    {
+        return currentCombatBonusScore;
     }
 }

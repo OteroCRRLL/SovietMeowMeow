@@ -5,7 +5,7 @@ public class PCInteractable : MonoBehaviour, IInteractable
 {
     [Header("UI")]
     public TextMeshProUGUI uiText;
-    [SerializeField] private string interactionPrompt = "[F] - Usar PC";
+    [SerializeField] private string interactionPrompt = "[F] - Use PC";
     public string InteractionPrompt => interactionPrompt;
 
     [Header("Referencias")]

@@ -13,7 +13,7 @@ public class EMPItem : UsableItem
         {
             Camera mainCam = null;
             
-            // Buscar la cámara dentro del jugador (somos un hijo de su mano)
+            // Buscar la cámara dentro del jugador (el objeto es hijo de su mano)
             PlayerController player = GetComponentInParent<PlayerController>();
             if (player != null)
             {

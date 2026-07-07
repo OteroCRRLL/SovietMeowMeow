@@ -23,9 +23,7 @@ public class AdrenalineItem : UsableItem
         {
             playerController.ApplyInfiniteStamina(infiniteStaminaDuration);
             Debug.Log("Adrenalina inyectada. Stamina infinita por " + infiniteStaminaDuration + " segundos.");
-            
-            // Aquí podrías reproducir un sonido
-            
+
             ConsumeItem(); // Desaparece del inventario
         }
         else

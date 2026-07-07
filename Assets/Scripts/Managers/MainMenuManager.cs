@@ -13,7 +13,6 @@ public class MainMenuManager : MonoBehaviour
 
     private void Start()
     {
-        // Asegurar que el ratón esté visible y desbloqueado en el menú principal
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
@@ -29,6 +28,7 @@ public class MainMenuManager : MonoBehaviour
         if (GameManager.instance != null)
         {
             GameManager.instance.ResetProgress();
+            GameManager.instance.pendingIntroScreen = true;
         }
         else if (ReplayManager.instance != null)
         {

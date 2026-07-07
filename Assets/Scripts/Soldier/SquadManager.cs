@@ -37,7 +37,7 @@ public class SquadManager : MonoBehaviour
             }
             else
             {
-                // Si entran en combate o detectan algo, cancelamos la inserción para que actúen normal
+                // Si entran en combate o detectan algo, se cancela la inserción para que actúen con normalidad
                 isInserting = false;
                 leaderBrain.ClearOverrideDestination();
             }
@@ -155,7 +155,7 @@ public class SquadManager : MonoBehaviour
 
     public void HandlePlayerSpotted(Transform player)
     {
-        // Si no tenemos a nadie cazando al jugador o el que lo caza murió
+        // Si no hay nadie cazando al jugador, o el que lo caza murió
         if (currentHunter == null || !currentHunter.gameObject.activeInHierarchy || currentHunter.CurrentState == SoldierState.Dead)
         {
             // Intentar asignar a un soldado que NO esté en combate con otros enemigos
@@ -164,13 +164,13 @@ public class SquadManager : MonoBehaviour
             {
                 if (member != null && member.gameObject.activeInHierarchy && member.CurrentState != SoldierState.Dead)
                 {
-                    if (bestHunter == null) 
+                    if (bestHunter == null)
                     {
                         bestHunter = member;
                     }
                     else if (member.CurrentState != SoldierState.Combat && bestHunter.CurrentState == SoldierState.Combat)
                     {
-                        bestHunter = member; // Preferimos a alguien libre
+                        bestHunter = member; // Preferencia por alguien libre
                     }
                 }
             }
@@ -206,7 +206,7 @@ public class SquadManager : MonoBehaviour
         {
             if (member != asker && member != null && member.gameObject.activeInHierarchy && member.CurrentState != SoldierState.Dead)
             {
-                // Si otro miembro del escuadrón sigue viendo al objetivo, confirmamos que sigue en combate
+                // Si otro miembro del escuadrón sigue viendo al objetivo, se confirma que sigue en combate
                 if (member.CurrentTarget == target && member.HasLineOfSight)
                 {
                     return true;

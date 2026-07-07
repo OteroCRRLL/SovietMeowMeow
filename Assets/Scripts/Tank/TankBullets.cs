@@ -24,7 +24,7 @@ public class TankBullets : MonoBehaviour
 
     [Header("Filter")]
     public List<string> collisionTags = new List<string>();
-    public List<string> targetTags = new List<string>(); // Mantenemos la lista por si quieres explotar barriles o cosas sin facción
+    public List<string> targetTags = new List<string>(); // Lista mantenida por si hace falta explotar barriles u otras cosas sin facción
     
     private FactionIdentity shooterFaction;
 
@@ -60,7 +60,7 @@ public class TankBullets : MonoBehaviour
         {
             FactionIdentity hitFaction = hit.GetComponentInParent<FactionIdentity>();
             
-            // Ignoramos a los amigos (si chocamos contra nuestra propia facción, el misil no les hace daño en área)
+            // Ignora a los aliados (si el impacto es contra la propia facción, el misil no hace daño en área)
             if (hitFaction != null && shooterFaction != null && !shooterFaction.IsEnemy(hitFaction.myFaction))
             {
                 continue;
@@ -73,7 +73,7 @@ public class TankBullets : MonoBehaviour
 
             if (isValidTarget)
             {
-                // Buscamos el sistema de vida tanto en el objeto como en sus padres (por si el collider está en un hijo)
+                // Busca el sistema de vida tanto en el objeto como en sus padres (por si el collider está en un hijo)
                 HealthSystem health = hit.GetComponent<HealthSystem>();
                 if (health == null)
                 {

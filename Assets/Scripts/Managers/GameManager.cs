@@ -16,8 +16,13 @@ public class GameManager : MonoBehaviour
 
     [Header("Game State")]
     public int currentDay = 1;
-    public bool hasDeployedToday = false; // Registra si ya hemos hecho una misión este día
-    
+    public bool hasDeployedToday = false; // Registra si ya se hizo una misión este día
+
+    [Tooltip("Se pone a true al empezar una partida nueva; el Hub lo consume para mostrar la pantalla de intro.")]
+    public bool pendingIntroScreen = false;
+    [Tooltip("Se pone a true en el CompleteDay() donde se cumple la cuota del ciclo de 3 días.")]
+    public bool quotaJustAchieved = false;
+
     [Header("Progreso y Economía")]
     public int maxDaysPerWeek = 3;
     public float currentMoney = 0f;
@@ -90,6 +95,8 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public bool CompleteDay()
     {
+        quotaJustAchieved = false;
+
         if (currentDay >= maxDaysPerWeek)
         {
             if (currentMoney >= requiredMoneyQuota)
@@ -98,6 +105,7 @@ public class GameManager : MonoBehaviour
                 requiredMoneyQuota *= 1.5f;
                 currentDay = 1;
                 hasDeployedToday = false;
+                quotaJustAchieved = true;
                 Debug.Log($"Cuota cumplida. Semana reiniciada. Nueva cuota: ${requiredMoneyQuota}");
                 return true;
             }
@@ -106,13 +114,27 @@ public class GameManager : MonoBehaviour
                 Debug.Log("Cuota no cumplida. Fin del juego.");
                 ClearSavedReplayData();
                 SaveManager.DeleteSave();
-                if (DeathScreenManager.instance != null)
+                ResetProgress();
+
+                System.Action goToMainMenu = () =>
                 {
-                    DeathScreenManager.instance.ShowDeathScreen("YOU WERE FIRED\n\nQuota failed.");
+                    if (SceneController.instance != null)
+                    {
+                        SceneController.instance.LoadScene("MainMenu");
+                    }
+                    else
+                    {
+                        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+                    }
+                };
+
+                if (OutroScreenManager.instance != null)
+                {
+                    OutroScreenManager.instance.Show(false, goToMainMenu);
                 }
                 else
                 {
-                    FailDay();
+                    goToMainMenu();
                 }
                 return false;
             }
@@ -137,7 +159,6 @@ public class GameManager : MonoBehaviour
         Debug.Log("Has perdido los objetos que llevabas equipados.");
         equippedItems = new string[3] { "", "", "" };
         
-        // Comprobar si ya no quedan días y no llegamos a la cuota
         if (currentDay >= maxDaysPerWeek && currentMoney < requiredMoneyQuota)
         {
             Debug.Log("Cuota no cumplida. Fin del juego.");
@@ -147,9 +168,9 @@ public class GameManager : MonoBehaviour
             return false; // Despedido -> MainMenu
         }
         
-        // Si no estamos despedidos, no avanzamos de día automáticamente.
-        // Simplemente marcamos que ya hemos gastado la expedición de hoy.
-        // El jugador volverá al Hub y tendrá que dormir para avanzar al siguiente día.
+        // Si no hay despido, no se avanza de día automáticamente; solo se marca
+        // que la expedición de hoy ya se gastó. El jugador volverá al Hub y
+        // tendrá que dormir para avanzar al siguiente día.
         hasDeployedToday = true;
         
         return true; // Sobrevive -> Hub
@@ -264,6 +285,11 @@ public class GameManager : MonoBehaviour
     {
         ApplyPendingReplayArchive();
 
+        // Por si la escena cambió mientras el juego estaba en pausa, evitar que se quede congelado.
+        isPaused = false;
+        Time.timeScale = 1f;
+        if (pauseMenuUI != null) pauseMenuUI.SetActive(false);
+
         // Asegurarnos de que el input siga activo tras cambiar de escena
         if (pauseInput != null) 
         {
@@ -302,8 +328,8 @@ public class GameManager : MonoBehaviour
             if (child.name == "PausePanel")
             {
                 pauseMenuUI = child.gameObject;
-                pauseMenuUI.SetActive(false); // Nos aseguramos de que empiece oculto
-                
+                pauseMenuUI.SetActive(false);
+
                 // Conectar los botones dinámicamente
                 UnityEngine.UI.Button[] buttons = pauseMenuUI.GetComponentsInChildren<UnityEngine.UI.Button>(true);
                 foreach (UnityEngine.UI.Button btn in buttons)

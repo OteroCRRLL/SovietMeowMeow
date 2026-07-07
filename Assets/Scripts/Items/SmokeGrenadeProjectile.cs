@@ -39,11 +39,11 @@ public class SmokeGrenadeProjectile : MonoBehaviour
         
         SphereCollider col = smokeColliderObj.AddComponent<SphereCollider>();
         col.radius = smokeRadius;
-        col.isTrigger = false; // Solid collider, but we will configure physics matrix so it doesn't block movement
+        col.isTrigger = false; // Solid collider; the physics matrix is configured separately so it doesn't block movement
 
         Destroy(smokeColliderObj, smokeDuration);
 
-        // Hide the grenade object but don't destroy immediately if there's audio playing from it directly (we used PlayClipAtPoint so it's fine)
+        // Audio was triggered via PlayClipAtPoint, so it keeps playing independently of this object being destroyed
         Destroy(gameObject);
     }
 }

@@ -6,7 +6,7 @@ public class SoldierSensor : MonoBehaviour
     [Header("Detection settings")]
     public float DetectRange = 40f;
     public Transform visionPoint;
-    public LayerMask detectableLayers; // En Unity ahora ignoraremos esto para usar ~0 si queremos chocar con todo
+    public LayerMask detectableLayers; // En Unity, se puede ignorar esto y usar ~0 para colisionar con todo
 
     [Header("Raycasts Configuration (Cone)")]
     [Tooltip("Apertura total del cono en grados.")]
@@ -15,6 +15,10 @@ public class SoldierSensor : MonoBehaviour
     [Header("Optimization")]
     public float scanFrequency = 5f;
     private float nextScanTime = 0f;
+
+    [Header("Close Range Awareness")]
+    [Tooltip("Distancia dentro de la cual se detecta a alguien aunque esté fuera del cono de visión (p. ej., mientras el soldado combate a otro objetivo mirando en otra dirección).")]
+    public float closeRangeAlwaysNoticeDistance = 4f;
     
     private Collider[] collidersBuffer = new Collider[20]; 
     private FactionIdentity myFaction;
@@ -78,7 +82,7 @@ public class SoldierSensor : MonoBehaviour
             Vector3 targetPosition = col.bounds.center;
             Vector3 directionToTarget = (targetPosition - visionPoint.position).normalized;
 
-            // Aplanamos vectores
+            // Vectores aplanados
             Vector3 flatForward = visionPoint.forward;
             flatForward.y = 0;
             flatForward.Normalize();
@@ -88,11 +92,15 @@ public class SoldierSensor : MonoBehaviour
             flatDirectionToTarget.Normalize();
 
             float angleToTarget = Vector3.Angle(flatForward, flatDirectionToTarget);
-            
-            if (angleToTarget <= angleDifference / 2f)
-            {
-                float distanceToTarget = Vector3.Distance(visionPoint.position, targetPosition);
+            float distanceToTarget = Vector3.Distance(visionPoint.position, targetPosition);
 
+            // Fuera del cono de visión se ignora, salvo que esté lo bastante cerca como para
+            // notarse de todas formas (p. ej. alguien pasando al lado mientras se combate a otro objetivo).
+            bool withinCone = angleToTarget <= angleDifference / 2f;
+            bool closeEnoughRegardless = distanceToTarget <= closeRangeAlwaysNoticeDistance;
+
+            if (withinCone || closeEnoughRegardless)
+            {
                 // Raycast para comprobar paredes (recorre todos los impactos, no solo el primero,
                 // para no bloquearse cuando un aliado se cruza en el camino antes del objetivo real)
                 if (IsLineClear(visionPoint.position, directionToTarget, distanceToTarget, col.transform.root))
@@ -103,7 +111,7 @@ public class SoldierSensor : MonoBehaviour
                     }
                     else
                     {
-                        // Si es de otra facción, calculamos el más cercano
+                        // Si es de otra facción, se calcula el más cercano
                         if (distanceToTarget < closestEnemyDist)
                         {
                             closestEnemyDist = distanceToTarget;
@@ -138,7 +146,7 @@ public class SoldierSensor : MonoBehaviour
     /// Comprueba si hay línea de visión clara hacia un objetivo, recorriendo TODOS los impactos
     /// del rayo (no solo el primero). Con un único Raycast, cualquier aliado, cadáver u otro
     /// personaje que se cruce en el camino antes de llegar al objetivo hace fallar la detección
-    /// aunque el objetivo esté a la vista; por eso comprobamos el orden real de los impactos.
+    /// aunque el objetivo esté a la vista; por eso se comprueba el orden real de los impactos.
     /// </summary>
     private bool IsLineClear(Vector3 origin, Vector3 direction, float distance, Transform targetRoot)
     {
@@ -147,9 +155,9 @@ public class SoldierSensor : MonoBehaviour
 
         foreach (RaycastHit hit in hits)
         {
-            if (hit.transform.root == transform.root) continue; // Ignorar a nosotros mismos
+            if (hit.transform.root == transform.root) continue; // Ignora al propio emisor del rayo
 
-            // El primer impacto (que no seamos nosotros) debe ser el objetivo; si es otra cosa, bloquea
+            // El primer impacto (que no sea el propio emisor) debe ser el objetivo; si es otra cosa, bloquea
             return hit.transform.root == targetRoot;
         }
 

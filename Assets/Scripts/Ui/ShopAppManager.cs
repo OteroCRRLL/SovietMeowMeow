@@ -19,7 +19,7 @@ public class ShopAppManager : MonoBehaviour
     {
         if (GameManager.instance != null && moneyText != null)
         {
-            moneyText.text = $"Dinero: ${GameManager.instance.currentMoney}";
+            moneyText.text = $"Money: ${GameManager.instance.currentMoney}";
         }
     }
 

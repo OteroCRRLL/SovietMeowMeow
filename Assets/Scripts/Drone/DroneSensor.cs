@@ -51,10 +51,10 @@ public class DroneSensor : MonoBehaviour
             Vector3 targetPosition = col.bounds.center;
             Vector3 directionToTarget = (targetPosition - visionPoint.position).normalized;
 
-            // Como los drones vuelan alto, no aplanamos el vector Y. Hacemos el ángulo en 3D puro.
+            // Como los drones vuelan alto, el vector Y no se aplana. El ángulo se calcula en 3D puro.
             float angleToTarget = Vector3.Angle(visionPoint.forward, directionToTarget);
-            
-            // También comprobamos si el jugador está directamente debajo del dron
+
+            // También se comprueba si el jugador está directamente debajo del dron
             float angleToBottom = Vector3.Angle(Vector3.down, directionToTarget);
 
             if (angleToTarget <= angleDifference / 2f || angleToBottom <= downwardAngle / 2f)
@@ -127,7 +127,7 @@ public class DroneSensor : MonoBehaviour
     /// Comprueba si hay línea de visión clara hacia un objetivo, recorriendo TODOS los impactos
     /// del rayo (no solo el primero). Con un único Raycast, cualquier aliado, cadáver u otro
     /// personaje que se cruce en el camino antes de llegar al objetivo hace fallar la detección
-    /// aunque el objetivo esté a la vista; por eso comprobamos el orden real de los impactos.
+    /// aunque el objetivo esté a la vista; por eso se comprueba el orden real de los impactos.
     /// </summary>
     private bool IsLineClear(Vector3 origin, Vector3 direction, float distance, Transform targetRoot)
     {
@@ -136,9 +136,9 @@ public class DroneSensor : MonoBehaviour
 
         foreach (RaycastHit hit in hits)
         {
-            if (hit.transform.root == transform.root) continue; // Ignorar a nosotros mismos
+            if (hit.transform.root == transform.root) continue; // Ignora al propio emisor del rayo
 
-            // El primer impacto (que no seamos nosotros) debe ser el objetivo; si es otra cosa, bloquea
+            // El primer impacto (que no sea el propio emisor) debe ser el objetivo; si es otra cosa, bloquea
             return hit.transform.root == targetRoot;
         }
 

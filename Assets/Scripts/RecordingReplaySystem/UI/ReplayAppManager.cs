@@ -210,11 +210,11 @@ public class ReplayAppManager : MonoBehaviour
 
         if (ReplayManager.instance == null || !ReplayManager.instance.HasAnyPlaybackData())
         {
-            dayLabel.text = "Sin grabaciones";
+            dayLabel.text = "No recordings";
             return;
         }
 
-        dayLabel.text = $"Día {currentPlaybackDay}";
+        dayLabel.text = $"Day {currentPlaybackDay}";
     }
 
     private void CleanupRenderTextures()

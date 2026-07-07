@@ -8,7 +8,7 @@ public class MissionDoor : MonoBehaviour, IInteractable
 
     [Header("UI")]
     public TextMeshProUGUI uiText;
-    [TextArea] public string promptMessage = "[E] - Usar Puerta";
+    [TextArea] public string promptMessage = "[E] - Use Door";
 
     public string InteractionPrompt => promptMessage;
 
@@ -50,7 +50,7 @@ public class MissionDoor : MonoBehaviour, IInteractable
         {
             if (isDeploying && GameManager.instance != null && GameManager.instance.hasDeployedToday)
             {
-                uiText.text = "Ya has desplegado. Ve a dormir.";
+                uiText.text = "You've already deployed. Go to sleep.";
             }
             else
             {

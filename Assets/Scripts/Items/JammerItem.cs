@@ -21,9 +21,6 @@ public class JammerItem : UsableItem
                 ResetUsage(); // Permite volver a usarlo
                 Debug.Log("Jammer recargado y listo para usarse.");
             }
-            
-            // Opcional: Podrías hacer que el jugador no pueda pulsar el botón mientras recarga
-            // o que suene un error si lo intenta.
         }
         else
         {
@@ -55,7 +52,7 @@ public class JammerItem : UsableItem
         isOnCooldown = true;
         cooldownTimer = cooldown;
         
-        // ¡IMPORTANTE! No llamamos a ConsumeItem() porque el Jammer es permanente
+        // No se llama a ConsumeItem() porque el Jammer es permanente
     }
 
     private void OnDrawGizmosSelected()

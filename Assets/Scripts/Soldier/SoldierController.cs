@@ -76,13 +76,13 @@ public class SoldierController : MonoBehaviour
         UpdateWeaponAudio();
         UpdateVoiceAudio();
 
-        // Si no se le ha ordenado mirar a un objetivo específico este frame, alineamos el cuerpo con el movimiento
+        // Si no se le ha ordenado mirar a un objetivo específico este frame, el cuerpo se alinea con el movimiento
         if (!isExplicitlyRotating && body != null)
         {
             body.localRotation = Quaternion.Slerp(body.localRotation, Quaternion.identity, Time.deltaTime * rotationSpeed);
         }
-        
-        // Reseteamos el flag para el siguiente frame
+
+        // Reset del flag para el siguiente frame
         isExplicitlyRotating = false;
     }
 
@@ -104,7 +104,7 @@ public class SoldierController : MonoBehaviour
 
     private void UpdateVoiceAudio()
     {
-        // Si el soldado está muerto, detenemos audios y salimos
+        // Si el soldado está muerto, se detienen los audios y se sale
         if (brain != null && brain.CurrentState == SoldierState.Dead)
         {
             if (voiceAudioSource.isPlaying) voiceAudioSource.Stop();
@@ -118,7 +118,7 @@ public class SoldierController : MonoBehaviour
             if (russianVoicelinesClip == null)
             {
                 Debug.LogWarning("[Voz] Intentando hablar, pero 'Russian Voicelines Clip' está vacío en el Inspector.");
-                ScheduleNextVoiceLine(); // Lo reprogramamos para evitar bucles infinitos de errores
+                ScheduleNextVoiceLine(); // Se reprograma para evitar bucles infinitos de errores
                 return;
             }
 
@@ -182,7 +182,7 @@ public class SoldierController : MonoBehaviour
 
     public void SetAnimation(string stateName)
     {
-        // Si el estado es Walk, usamos la animación de Run
+        // Si el estado es Walk, se usa la animación de Run
         if (stateName == "Walk")
         {
             stateName = "Run";

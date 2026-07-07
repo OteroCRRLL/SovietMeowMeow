@@ -74,8 +74,8 @@ public class PlayerController : MonoBehaviour
     private float footstepGraceTimer;
 
     /// <summary>
-    /// Standard Unity function called whenever the attached gameobject is enabled
-    /// We use this to enable the input actions
+    /// Standard Unity function called whenever the attached gameobject is enabled.
+    /// Enables the input actions.
     /// </summary>
     private void OnEnable()
     {
@@ -86,8 +86,8 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Standard Unity function called whenever the attached gameobject is disabled
-    /// We use this to disable the input actions
+    /// Standard Unity function called whenever the attached gameobject is disabled.
+    /// Disables the input actions.
     /// </summary>
     private void OnDisable()
     {
@@ -329,14 +329,13 @@ public class PlayerController : MonoBehaviour
         currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
 
         // Handle the control of the player while it is on the ground
-        if (controller.isGrounded && moveDirection.y <= 0) // could also use RayCastGrounded instea of isGrounded
+        if (controller.isGrounded && moveDirection.y <= 0) // could also use RayCastGrounded instead of isGrounded
         {
 
             timeToStopBeingLenient = Time.time + jumpTimeLeniency;
 
-            // Set the movement direction to be the received input, set y to 0 since we are on the ground
+            // y is 0 here since the player is on the ground
             moveDirection = new Vector3(leftRightInput, 0, forwardBackwardInput);
-            // Set the move direction in relation to the transform
             moveDirection = transform.TransformDirection(moveDirection);
             moveDirection = moveDirection * currentSpeed;
 
@@ -400,7 +399,7 @@ public class PlayerController : MonoBehaviour
     /// Checks to see if player is falling (vs. going up from jump)
     /// </summary>
     /// <returns></returns>
-    float previousHeight; // track the previous height so you can determine when the player is falling
+    float previousHeight; // tracks the previous height to determine when the player is falling
     bool isFalling()
     {
         bool isFalling = false;

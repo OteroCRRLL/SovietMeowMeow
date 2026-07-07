@@ -15,10 +15,8 @@ public class InventorySlotUI : MonoBehaviour
 
     private void Awake()
     {
-        // Obtenemos el botón de este mismo objeto (el marco)
         slotButton = GetComponent<Button>();
 
-        // Buscamos obligatoriamente a los hijos por su nombre
         Transform iconTransform = transform.Find("Icono");
         if (iconTransform != null)
         {

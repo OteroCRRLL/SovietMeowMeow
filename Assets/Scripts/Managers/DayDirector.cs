@@ -97,7 +97,7 @@ public class DayDirector : MonoBehaviour
             droneRespawnTimer -= Time.deltaTime;
             if (droneRespawnTimer <= 0f)
             {
-                FactionType fac = DetermineFaction(Random.Range(0, 10), 10); // Random
+                FactionType fac = DetermineReinforcementFaction();
                 List<DroneSpawnerPoint> dronePoints = new List<DroneSpawnerPoint>();
                 DroneSpawnerPoint sp = GetAndRemoveSpawnPoint(ref dronePoints);
                 if (sp != null) SpawnDrone(fac, sp);
@@ -135,10 +135,9 @@ public class DayDirector : MonoBehaviour
             List<SquadSpawnerPoint> squadPoints = new List<SquadSpawnerPoint>();
             for (int i = 0; i < currentConfig.reinforcementSquads; i++)
             {
-                // Si la suma va a exceder el máximo, no spawneamos más escuadras
                 if (totalSoldiers + currentConfig.minSoldiersPerSquad > currentConfig.maxActiveSoldiers) break;
 
-                FactionType fac = DetermineFaction(Random.Range(0, 10), 10); // Random
+                FactionType fac = DetermineReinforcementFaction();
                 SquadSpawnerPoint sp = GetAndRemoveSpawnPoint(ref squadPoints);
                 if (sp != null) SpawnSquad(fac, true, sp); // true = Vienen de refuerzo (van al centro primero)
                 
@@ -175,6 +174,109 @@ public class DayDirector : MonoBehaviour
         }
         
         return Random.value > 0.5f ? FactionType.Soviet : FactionType.MeowMeow;
+    }
+
+    /// <summary>
+    /// Elige la facción para un refuerzo (escuadra o dron) reforzando siempre al bando
+    /// con menos presencia activa en el mapa, en vez de un 50/50 puro. Esto evita que
+    /// los refuerzos se acumulen en un solo bando y deja a ambas facciones con fuerzas
+    /// para poder encontrarse y enfrentarse.
+    /// </summary>
+    private FactionType DetermineReinforcementFaction()
+    {
+        int sovietCount = 0;
+        int meowCount = 0;
+
+        foreach (var squad in activeSquads)
+        {
+            if (squad == null) continue;
+            foreach (var member in squad.members)
+            {
+                CountFaction(member != null ? member.GetComponent<FactionIdentity>() : null, ref sovietCount, ref meowCount);
+            }
+        }
+
+        foreach (var drone in activeDrones)
+        {
+            CountFaction(drone != null ? drone.GetComponent<FactionIdentity>() : null, ref sovietCount, ref meowCount);
+        }
+
+        foreach (var tank in activeTanks)
+        {
+            CountFaction(tank != null ? tank.GetComponent<FactionIdentity>() : null, ref sovietCount, ref meowCount);
+        }
+
+        if (sovietCount == meowCount) return Random.value > 0.5f ? FactionType.Soviet : FactionType.MeowMeow;
+        return sovietCount < meowCount ? FactionType.Soviet : FactionType.MeowMeow;
+    }
+
+    private void CountFaction(FactionIdentity id, ref int sovietCount, ref int meowCount)
+    {
+        if (id == null) return;
+        if (id.myFaction == FactionType.Soviet) sovietCount++;
+        else if (id.myFaction == FactionType.MeowMeow) meowCount++;
+    }
+
+    /// <summary>
+    /// Busca la posición del enemigo activo más cercano a un punto dado (de la facción contraria).
+    /// Se usa para dirigir a los refuerzos hacia donde realmente está el otro bando, en vez de
+    /// caminar siempre a ciegas hacia el centro del mapa.
+    /// </summary>
+    private bool TryGetNearestEnemyPosition(FactionType myFaction, Vector3 fromPosition, out Vector3 nearestPosition)
+    {
+        bool found = false;
+        nearestPosition = Vector3.zero;
+        float bestDistSqr = float.MaxValue;
+
+        foreach (var squad in activeSquads)
+        {
+            if (squad == null || squad.members.Count == 0) continue;
+            SoldierBrain leader = squad.members[0];
+            if (leader == null) continue;
+
+            FactionIdentity id = leader.GetComponent<FactionIdentity>();
+            if (id == null || id.myFaction == myFaction) continue;
+
+            float distSqr = (leader.transform.position - fromPosition).sqrMagnitude;
+            if (distSqr < bestDistSqr)
+            {
+                bestDistSqr = distSqr;
+                nearestPosition = leader.transform.position;
+                found = true;
+            }
+        }
+
+        foreach (var drone in activeDrones)
+        {
+            if (drone == null) continue;
+            FactionIdentity id = drone.GetComponent<FactionIdentity>();
+            if (id == null || id.myFaction == myFaction) continue;
+
+            float distSqr = (drone.transform.position - fromPosition).sqrMagnitude;
+            if (distSqr < bestDistSqr)
+            {
+                bestDistSqr = distSqr;
+                nearestPosition = drone.transform.position;
+                found = true;
+            }
+        }
+
+        foreach (var tank in activeTanks)
+        {
+            if (tank == null) continue;
+            FactionIdentity id = tank.GetComponent<FactionIdentity>();
+            if (id == null || id.myFaction == myFaction) continue;
+
+            float distSqr = (tank.transform.position - fromPosition).sqrMagnitude;
+            if (distSqr < bestDistSqr)
+            {
+                bestDistSqr = distSqr;
+                nearestPosition = tank.transform.position;
+                found = true;
+            }
+        }
+
+        return found;
     }
 
     private T GetAndRemoveSpawnPoint<T>(ref List<T> availablePoints) where T : MonoBehaviour
@@ -275,12 +377,22 @@ public class DayDirector : MonoBehaviour
 
         if (isReinforcement)
         {
-            // Calcular un punto hacia el centro del mapa
-            Vector3 targetCenter = mapCenterPoint != null ? mapCenterPoint.position : Vector3.zero;
+            // Si hay presencia enemiga conocida en el mapa, dirigir la inserción hacia ella
+            // en vez de hacia el centro a ciegas, para que los refuerzos se crucen con el otro bando.
+            Vector3 targetCenter;
+            if (TryGetNearestEnemyPosition(faction, spawnPoint.position, out Vector3 nearestEnemy))
+            {
+                targetCenter = nearestEnemy;
+            }
+            else
+            {
+                targetCenter = mapCenterPoint != null ? mapCenterPoint.position : Vector3.zero;
+            }
+
             Vector3 dirToCenter = (targetCenter - spawnPoint.position).normalized;
             float distToCenter = Vector3.Distance(spawnPoint.position, targetCenter);
-            
-            // Que caminen una distancia moderada hacia el centro antes de empezar a patrullar a lo loco
+
+            // Que caminen una distancia moderada hacia el objetivo antes de empezar a patrullar a lo loco
             Vector3 insertionPoint = spawnPoint.position + dirToCenter * (distToCenter * 0.4f);
             
             if (NavMesh.SamplePosition(insertionPoint, out NavMeshHit hitCenter, 10f, NavMesh.AllAreas))

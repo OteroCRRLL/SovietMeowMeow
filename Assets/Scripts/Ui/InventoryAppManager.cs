@@ -56,7 +56,6 @@ public class InventoryAppManager : MonoBehaviour
 
         if (GameManager.instance == null || GameManager.instance.itemDatabase == null) return;
 
-        // Diccionario para contar cuántos tenemos de cada uno
         Dictionary<string, int> inventoryCounts = new Dictionary<string, int>();
         foreach(string id in GameManager.instance.hubInventory)
         {
@@ -96,7 +95,6 @@ public class InventoryAppManager : MonoBehaviour
     {
         selectedEquipmentSlot = index;
         Debug.Log("Has hecho click en el slot que el Inspector considera que es el: " + (index + 1) + " (Índice interno: " + index + ").");
-        // Aquí podrías añadir lógica visual para destacar el slot seleccionado
     }
 
     public void OnInventoryItemClicked(ItemData item)

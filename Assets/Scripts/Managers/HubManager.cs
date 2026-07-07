@@ -21,7 +21,6 @@ public class HubManager : MonoBehaviour
 
     private void Start()
     {
-        // Al empezar la escena del Hub, pedir al GameManager que instancie al jugador en el SpawnPoint.
         if (GameManager.instance != null && playerSpawnPoint != null)
         {
             GameManager.instance.SpawnPlayer(playerSpawnPoint);
@@ -29,6 +28,16 @@ public class HubManager : MonoBehaviour
         else
         {
             Debug.LogWarning("HubManager: Faltan referencias para spawnear al jugador (GameManager o SpawnPoint).");
+        }
+
+        // Cartel de introducción tras pulsar "Nueva Partida"
+        if (GameManager.instance != null && GameManager.instance.pendingIntroScreen)
+        {
+            GameManager.instance.pendingIntroScreen = false;
+            if (IntroScreenManager.instance != null)
+            {
+                IntroScreenManager.instance.Show();
+            }
         }
     }
 

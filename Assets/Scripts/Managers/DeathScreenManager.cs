@@ -31,7 +31,7 @@ public class DeathScreenManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
-            // Estará dentro del _SYSTEMS, así que no necesitamos DontDestroyOnLoad extra.
+            // Vive dentro de _SYSTEMS, así que no hace falta DontDestroyOnLoad aquí.
         }
         else
         {
@@ -41,7 +41,6 @@ public class DeathScreenManager : MonoBehaviour
 
     private void Start()
     {
-        // Nos aseguramos de que el panel de muerte empieza totalmente invisible y no bloquea el ratón.
         if (deathCanvasGroup != null)
         {
             deathCanvasGroup.alpha = 0f;
@@ -51,14 +50,14 @@ public class DeathScreenManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Llama a esta función desde el evento OnDeath() del HealthSystem del jugador.
+    /// Se invoca desde el evento OnDeath() del HealthSystem del jugador.
     /// </summary>
     public void ShowDeathScreen()
     {
         if (deathCanvasGroup == null)
         {
             Debug.LogError("DeathScreenManager: No se asignó el CanvasGroup de la pantalla de muerte.");
-            // Si falla la UI, al menos forzamos el reinicio
+            // Si falla la UI, se fuerza el reinicio como mínimo
             ForceRestart();
             return;
         }
@@ -78,7 +77,6 @@ public class DeathScreenManager : MonoBehaviour
 
     private IEnumerator DeathSequenceRoutine(string message)
     {
-        // Detener el juego/movimiento (Opcional, pero recomendado)
         Time.timeScale = 0f;
 
         if (deathText != null)
@@ -86,15 +84,14 @@ public class DeathScreenManager : MonoBehaviour
             deathText.text = message;
         }
 
-        // Activamos el canvas para que cubra la pantalla
         deathCanvasGroup.blocksRaycasts = true;
 
         // Fase 1: Fade in al negro
         float elapsed = 0f;
         while (elapsed < fadeToBlackDuration)
         {
-            // Usamos unscaledDeltaTime porque hemos pausado el Time.timeScale
-            elapsed += Time.unscaledDeltaTime; 
+            // unscaledDeltaTime porque Time.timeScale está pausado
+            elapsed += Time.unscaledDeltaTime;
             deathCanvasGroup.alpha = Mathf.Lerp(0f, 1f, elapsed / fadeToBlackDuration);
             yield return null;
         }
@@ -120,7 +117,7 @@ public class DeathScreenManager : MonoBehaviour
         
         yield return new WaitForSecondsRealtime(displayDuration);
 
-        // Asegurarse de liberar el ratón antes de cambiar de escena, por si el objeto se destruye
+        // Liberar el ratón antes de cambiar de escena, por si el objeto se destruye
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
@@ -134,7 +131,6 @@ public class DeathScreenManager : MonoBehaviour
             SceneManager.LoadScene(sceneToLoad);
         }
 
-        // Devolvemos el tiempo a la normalidad
         Time.timeScale = 1f;
 
         // Fase 4: Fade out del negro para volver a ver el menú principal
@@ -145,8 +141,7 @@ public class DeathScreenManager : MonoBehaviour
             deathCanvasGroup.alpha = Mathf.Lerp(1f, 0f, elapsed / fadeToClearDuration);
             yield return null;
         }
-        
-        // Finalizamos ocultando el panel
+
         deathCanvasGroup.alpha = 0f;
         deathCanvasGroup.blocksRaycasts = false;
     }

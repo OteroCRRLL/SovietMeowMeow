@@ -51,7 +51,7 @@ public class Bullet : MonoBehaviour
 
         if (health != null)
         {
-            // Si se usan target tags (como el TankBullet), comprobamos. Si la lista está vacía, dañamos a cualquier enemigo por defecto.
+            // Si se usan target tags (como el TankBullet), se comprueban. Si la lista está vacía, se daña a cualquier enemigo por defecto.
             if (targetTags.Count == 0 || targetTags.Contains(hitObj.tag) || hitObj.CompareTag("Player") || hitFaction != null)
             {
                 health.TakeDamage(damage);

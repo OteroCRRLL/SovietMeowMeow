@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// Usa este componente para reproducir sonidos que deben quedar grabados en el replay.
+/// Componente para reproducir sonidos que deben quedar grabados en el replay.
 /// </summary>
 [RequireComponent(typeof(AudioSource))]
 public class ReplayAudioEmitter : MonoBehaviour

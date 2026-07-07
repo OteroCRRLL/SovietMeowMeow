@@ -5,7 +5,7 @@ public class Bed : MonoBehaviour, IInteractable
 {
     [Header("UI")]
     public TextMeshProUGUI uiText;
-    [TextArea] public string promptMessage = "[E] - Dormir y Avanzar Día";
+    [TextArea] public string promptMessage = "[E] - Sleep and Advance Day";
 
     public string InteractionPrompt => promptMessage;
 
@@ -20,22 +20,35 @@ public class Bed : MonoBehaviour, IInteractable
             else
             {
                 bool survived = GameManager.instance.CompleteDay();
-                
+
                 if (survived)
                 {
                     Debug.Log("Has dormido. Es un nuevo día.");
-                    
+
                     // Guardado automático al ir a dormir
                     GameManager.instance.SaveGame();
-                    
-                    // Recargamos el Hub para que se instancie el mensaje del LevelAnnouncer "Home - Day X"
-                    if (SceneController.instance != null)
+
+                    // Recarga el Hub para que se instancie el mensaje del LevelAnnouncer "Home - Day X"
+                    System.Action goToHub = () =>
                     {
-                        SceneController.instance.LoadScene("Hub");
+                        if (SceneController.instance != null)
+                        {
+                            SceneController.instance.LoadScene("Hub");
+                        }
+                        else
+                        {
+                            UnityEngine.SceneManagement.SceneManager.LoadScene("Hub");
+                        }
+                    };
+
+                    // Si se acaba de cumplir la cuota del ciclo de 3 días, se muestra el cartel antes de volver al Hub.
+                    if (GameManager.instance.quotaJustAchieved && OutroScreenManager.instance != null)
+                    {
+                        OutroScreenManager.instance.Show(true, goToHub);
                     }
                     else
                     {
-                        UnityEngine.SceneManagement.SceneManager.LoadScene("Hub");
+                        goToHub();
                     }
                 }
             }
@@ -48,7 +61,7 @@ public class Bed : MonoBehaviour, IInteractable
         {
             if (GameManager.instance != null && !GameManager.instance.hasDeployedToday)
             {
-                uiText.text = "Aún no has trabajado hoy.";
+                uiText.text = "You haven't worked today yet.";
             }
             else
             {

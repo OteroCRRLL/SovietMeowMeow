@@ -44,6 +44,35 @@ public class LevelManager : MonoBehaviour
         {
             Debug.LogWarning("LevelManager: Faltan referencias para spawnear al jugador (GameManager o spawn seleccionado).");
         }
+
+        PositionExtractionPoint();
+    }
+
+    /// <summary>
+    /// Mueve el ExtractionPoint ya colocado en la escena a uno de los ExtractionSpawnerPoint
+    /// disponibles, elegido al azar. Puede haber cualquier cantidad de ExtractionSpawnerPoint
+    /// en Unity; no hace falta arrastrar nada a ningún array, se detectan solos.
+    /// </summary>
+    private void PositionExtractionPoint()
+    {
+        ExtractionSpawnerPoint[] points = FindObjectsOfType<ExtractionSpawnerPoint>();
+        if (points.Length == 0)
+        {
+            Debug.LogWarning("LevelManager: No hay ningún ExtractionSpawnerPoint en la escena, el punto de extracción se queda donde esté colocado.");
+            return;
+        }
+
+        ExtractionPoint extractionPoint = FindObjectOfType<ExtractionPoint>();
+        if (extractionPoint == null)
+        {
+            Debug.LogWarning("LevelManager: No se encontró ningún ExtractionPoint en la escena para reposicionar.");
+            return;
+        }
+
+        ExtractionSpawnerPoint selected = points[UnityEngine.Random.Range(0, points.Length)];
+        extractionPoint.transform.SetPositionAndRotation(selected.transform.position, selected.transform.rotation);
+
+        Debug.Log($"LevelManager: Punto de extracción movido a '{selected.gameObject.name}'.");
     }
 
     /// <summary>
@@ -59,20 +88,40 @@ public class LevelManager : MonoBehaviour
                 ReplayManager.instance.ArchiveMissionForDay(GameManager.instance.currentDay);
                 ReplayManager.instance.recordedSessions.Clear();
             }
-            if (CameraScoring.instance != null) 
+
+            int baseScore = 0;
+            int bonusScore = 0;
+            int viewsObtained = 0;
+            float moneyEarned = 0f;
+
+            if (CameraScoring.instance != null)
             {
-                int viewsObtained = CameraScoring.instance.GetCurrentScore();
-                float moneyEarned = viewsObtained * 0.5f;
+                baseScore = CameraScoring.instance.GetBaseScore();
+                bonusScore = CameraScoring.instance.GetCombatBonusScore();
+                viewsObtained = CameraScoring.instance.GetCurrentScore();
+                moneyEarned = viewsObtained * 0.5f;
                 GameManager.instance.currentMoney += moneyEarned;
                 Debug.Log($"Extraction: {viewsObtained} views converted to ${moneyEarned}. Total money: ${GameManager.instance.currentMoney}");
                 CameraScoring.instance.ShowFinalScore();
             }
-           
+
             GameManager.instance.hasDeployedToday = true; // El jugador ya hizo su misión de hoy
             GameManager.instance.SaveGame();
-            
-            Debug.Log("Extraction complete. Returning to Hub.");
-            SceneController.instance.LoadScene("Hub"); // Cambiar al nombre exacto de la escena del Hub
+
+            System.Action goToHub = () =>
+            {
+                Debug.Log("Extraction complete. Returning to Hub.");
+                SceneController.instance.LoadScene("Hub"); // Cambiar al nombre exacto de la escena del Hub
+            };
+
+            if (ExtractionSummaryScreenManager.instance != null)
+            {
+                ExtractionSummaryScreenManager.instance.Show(baseScore, bonusScore, viewsObtained, moneyEarned, goToHub);
+            }
+            else
+            {
+                goToHub();
+            }
         }
         else
         {

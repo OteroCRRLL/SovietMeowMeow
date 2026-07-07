@@ -59,7 +59,7 @@ public class TankBrain : MonoBehaviour
         foreach (Rigidbody rb in rbs)
         {
             rb.mass = 50000f; // Peso hiperrealista
-            rb.isKinematic = true; // Como se mueve por NavMesh, bloqueamos las fuerzas físicas externas
+            rb.isKinematic = true; // Como se mueve por NavMesh, se bloquean las fuerzas físicas externas
         }
         
         Rigidbody parentRb = GetComponentInParent<Rigidbody>();
@@ -201,7 +201,7 @@ public class TankBrain : MonoBehaviour
     {
         controller.RotateTowards(currentTarget);
 
-        // En lugar de usar el cono de visión, verificamos si el objetivo sigue visible directamente
+        // En lugar de usar el cono de visión, se comprueba si el objetivo sigue visible directamente
         bool stillVisible = sensor.IsTargetVisible(currentTarget);
 
         //Still in sight verification
@@ -212,7 +212,7 @@ public class TankBrain : MonoBehaviour
 
             if (lockTimer >= lockTime)
             {
-                shootTimer = 0f; // Reiniciamos el temporizador de disparo
+                shootTimer = 0f; // Reset del temporizador de disparo
                 currentState = TankState.Shoot;
             }
         }
@@ -228,19 +228,19 @@ public class TankBrain : MonoBehaviour
 
     private void UpdateShoot()
     {
-        // Disparamos solo en el primer instante del estado Shoot
+        // Dispara solo en el primer instante del estado Shoot
         if (shootTimer == 0f)
         {
             controller.Fire(currentTarget);
         }
 
-        // Nos quedamos en este estado durante 'shootDuration' segundos
+        // Permanece en este estado durante 'shootDuration' segundos
         shootTimer += Time.deltaTime;
-        
+
         if (shootTimer >= shootDuration)
         {
-            lockTimer = 0f; // Reiniciamos el tiempo de lock para el próximo disparo
-            currentState = TankState.Lock; // Volvemos a fijar al objetivo
+            lockTimer = 0f; // Reset del tiempo de lock para el próximo disparo
+            currentState = TankState.Lock; // Vuelve a fijar el objetivo
         }
     }
     private void ResumePatrol()
@@ -269,13 +269,13 @@ public class TankBrain : MonoBehaviour
         while (!pointFound && attempts < 15)
         {
             attempts++;
-            // Buscamos un punto aleatorio pero muy lejano (ej. entre 50 y 150 metros)
+            // Punto aleatorio pero muy lejano (ej. entre 50 y 150 metros)
             Vector2 randomDir = Random.insideUnitCircle.normalized * Random.Range(50f, 150f);
             Vector3 targetPos = transform.position + new Vector3(randomDir.x, 0, randomDir.y);
-            
+
             if (NavMesh.SamplePosition(targetPos, out NavMeshHit hit, 20f, NavMesh.AllAreas))
             {
-                // Intentamos calcular una ruta completa para asegurarnos de que puede llegar físicamente sin atascarse
+                // Se calcula una ruta completa para asegurar que puede llegar físicamente sin atascarse
                 NavMeshPath path = new NavMeshPath();
                 if (agent.CalculatePath(hit.position, path) && path.status == NavMeshPathStatus.PathComplete)
                 {
@@ -351,7 +351,7 @@ public class TankBrain : MonoBehaviour
             }
         }
 
-        // Destruimos el tanque al instante si explota
+        // El tanque se destruye al instante si explota
         gameObject.SetActive(false);
     }
 

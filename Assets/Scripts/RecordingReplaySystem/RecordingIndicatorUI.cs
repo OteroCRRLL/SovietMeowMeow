@@ -10,7 +10,7 @@ public class RecordingIndicatorUI : MonoBehaviour
         }
         else
         {
-            // Si el manager no existe en la escena, nos auto-ocultamos por seguridad.
+            // Si el manager no existe en la escena, el objeto se autooculta por seguridad.
             gameObject.SetActive(false);
         }
     }

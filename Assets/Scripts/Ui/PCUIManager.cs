@@ -31,8 +31,8 @@ public class PCUIManager : MonoBehaviour
 
     private void Start()
     {
-        // El Canvas del PC puede estar encendido siempre si quieres que se vea la pantalla aunque no estés usándolo,
-        // pero por ahora lo ocultaremos hasta que interactúes con él, según el diseño inicial.
+        // El Canvas del PC podría permanecer encendido para que la pantalla se vea incluso sin usarlo,
+        // pero por diseño inicial permanece oculto hasta que se interactúa con él.
         if (pcCanvas != null)
         {
             pcCanvas.SetActive(false);
@@ -154,7 +154,7 @@ public class PCUIManager : MonoBehaviour
         if (isTransitioning) return;
 
         isPCOpen = false;
-        if (pcCanvas != null) pcCanvas.SetActive(false); // Opcional: podrías dejar el Canvas encendido si quieres que la pantalla siga "viva" al alejarte.
+        if (pcCanvas != null) pcCanvas.SetActive(false);
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -201,7 +201,7 @@ public class PCUIManager : MonoBehaviour
         // Reactivar controles
         if (playerController != null) playerController.enabled = true;
         if (cameraController != null) cameraController.enabled = true;
-        
+        ReenableInteraction();
 
         // Restaurar HUD del jugador
         if (playerHUDCanvas != null)
@@ -209,8 +209,6 @@ public class PCUIManager : MonoBehaviour
             playerHUDCanvas.gameObject.SetActive(true);
             playerHUDCanvas = null;
         }
-
-        
     }
 
     private void ReenableInteraction()

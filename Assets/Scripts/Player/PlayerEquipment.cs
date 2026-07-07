@@ -148,14 +148,14 @@ public class PlayerEquipment : MonoBehaviour
         
         try 
         {
-            // Intentamos leerlo como un Eje 1D (float) que es como lo tienes configurado
+            // Se intenta leer como un Eje 1D (float), que es la configuración esperada
             scrollValue = scrollAction.ReadValue<float>();
         }
-        catch 
+        catch
         {
-            try 
+            try
             {
-                // Si falla, intentamos leerlo como un Vector2 (X, Y)
+                // Si falla, se intenta leer como un Vector2 (X, Y)
                 scrollValue = scrollAction.ReadValue<Vector2>().y;
             }
             catch {}

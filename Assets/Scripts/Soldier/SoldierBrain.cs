@@ -77,7 +77,7 @@ public class SoldierBrain : MonoBehaviour
         currentAmmo = maxAmmo;
         currentStamina = maxStamina;
 
-        // Auto-asignar referencias por si se te olvidó arrastrarlas en el Inspector del Prefab
+        // Auto-asignar referencias por si quedaron sin arrastrar en el Inspector del Prefab
         if (sensor == null) sensor = GetComponentInChildren<SoldierSensor>();
         if (controller == null) controller = GetComponentInChildren<SoldierController>();
         if (agent == null) agent = GetComponent<NavMeshAgent>();
@@ -116,12 +116,12 @@ public class SoldierBrain : MonoBehaviour
     {
         if (currentState == SoldierState.Dead) return;
 
-        // Si no tenemos objetivo, adoptamos el que nos pasa el escuadrón
+        // Si no hay objetivo, se adopta el que pasa el escuadrón
         if (currentTarget == null && target != null)
         {
             currentTarget = target;
-            
-            // Inmediatamente miramos hacia él
+
+            // Gira inmediatamente hacia él
             controller.RotateTowards(currentTarget);
         }
     }
@@ -160,7 +160,7 @@ public class SoldierBrain : MonoBehaviour
             sensor.GetTargets(out visibleEnemy, out visiblePlayer);
         }
 
-        // Barrido de Visión si no estamos en combate
+        // Barrido de Visión si no está en combate
         if (currentState == SoldierState.Patrol || currentState == SoldierState.FollowLeader)
         {
             if (sensor != null) sensor.SweepVision();
@@ -170,7 +170,7 @@ public class SoldierBrain : MonoBehaviour
             if (sensor != null) sensor.ResetVision();
         }
 
-        // Avisar al squad manager si vemos al jugador
+        // Avisar al squad manager si el jugador es visible
         if (visiblePlayer != null && squadManager != null)
         {
             squadManager.HandlePlayerSpotted(visiblePlayer);
@@ -189,7 +189,7 @@ public class SoldierBrain : MonoBehaviour
             }
             else if (visibleEnemy != null)
             {
-                // Si no ve al jugador pero ve a un enemigo, le ataca
+                // Si no ve al jugador pero ve a un enemigo, ataca
                 currentTarget = visibleEnemy;
                 targetLostTimer = 0f;
                 if (squadManager != null) squadManager.AlertSquad(currentTarget);
@@ -197,7 +197,7 @@ public class SoldierBrain : MonoBehaviour
         }
         else
         {
-            // El resto del escuadrón (los no-hunters) prioriza enemigos para defender
+            // El resto del escuadrón (los que no cazan) prioriza enemigos para defender
             if (visibleEnemy != null)
             {
                 if (currentTarget != visibleEnemy)
@@ -209,7 +209,7 @@ public class SoldierBrain : MonoBehaviour
             }
         }
         
-        // Si ya teníamos un objetivo y lo seguimos viendo, mantenemos el Lock
+        // Si ya había un objetivo y se le sigue viendo, se mantiene el Lock
         if (currentTarget != null)
         {
             if (sensor != null && sensor.IsTargetVisible(currentTarget))
@@ -229,13 +229,13 @@ public class SoldierBrain : MonoBehaviour
                     
                     if (squadStillFighting)
                     {
-                        // Si un compañero sigue viendo al objetivo y peleando, nos mantenemos alerta
-                        // Reseteamos un poco el tiempo para seguir intentando flanquear/acercarnos
+                        // Si un compañero sigue viendo al objetivo y peleando, se mantiene la alerta
+                        // Reset parcial del tiempo para seguir intentando flanquear/acercarse
                         targetLostTimer = targetMemoryTime - 0.5f;
                     }
                     else
                     {
-                        // Perdimos al objetivo definitivamente tras el tiempo de memoria
+                        // Objetivo perdido definitivamente tras el tiempo de memoria
                         currentTarget = null;
                         if (currentState == SoldierState.HuntPlayer && squadManager != null)
                         {
@@ -247,12 +247,12 @@ public class SoldierBrain : MonoBehaviour
         }
         else
         {
-            // Perdimos al objetivo
+            // Objetivo perdido
             if (currentState == SoldierState.Combat || currentState == SoldierState.HuntPlayer)
             {
                 if (currentState == SoldierState.HuntPlayer && squadManager != null)
                 {
-                    squadManager.ClearHunter(this); // Avisamos que dejamos de perseguir
+                    squadManager.ClearHunter(this); // Avisa que se dejó de perseguir
                 }
                 
                 // Retomar estado base
@@ -279,7 +279,7 @@ public class SoldierBrain : MonoBehaviour
                 }
                 else
                 {
-                    // Si somos seguidores, el hunter está ocupándose de él, nosotros patrullamos
+                    // Si es un seguidor, el hunter ya se está ocupando de él, así que patrulla
                     currentTarget = null;
                     currentState = isLeader ? SoldierState.Patrol : SoldierState.FollowLeader;
                 }
@@ -400,7 +400,7 @@ public class SoldierBrain : MonoBehaviour
                 // Esperar a que tenga una ruta válida antes de comprobar la distancia
                 if (!agent.pathPending)
                 {
-                    // Evitamos el bug de Unity donde remainingDistance es 0 temporalmente
+                    // Evita el bug de Unity donde remainingDistance es 0 temporalmente
                     Vector3 currentPos = transform.position;
                     currentPos.y = 0;
                     Vector3 destPos = agent.destination;
@@ -408,15 +408,15 @@ public class SoldierBrain : MonoBehaviour
 
                     if (agent.remainingDistance <= 0.5f && Vector3.Distance(currentPos, destPos) <= 1.5f)
                     {
-                        // Llegamos al destino, empezamos a esperar
+                        // Destino alcanzado, empieza la espera
                         isWaiting = true;
                         waitTimer = 0f;
                     }
                     else if (agent.pathStatus == NavMeshPathStatus.PathInvalid || agent.pathStatus == NavMeshPathStatus.PathPartial)
                     {
-                        // Si la ruta es inválida (se atascó), forzamos un nuevo destino INMEDIATAMENTE
+                        // Si la ruta es inválida (se atascó), fuerza un nuevo destino INMEDIATAMENTE
                         isWaiting = true;
-                        waitTimer = waitTimeAtDestination; // Forzamos el reloj para que busque otro destino en el siguiente frame
+                        waitTimer = waitTimeAtDestination; // Fuerza el reloj para que busque otro destino en el siguiente frame
                     }
                 }
             }
@@ -437,7 +437,7 @@ public class SoldierBrain : MonoBehaviour
         {
             Vector3 centerDir = (DayDirector.instance.mapCenterPoint.position - transform.position).normalized;
             centerDir.y = 0;
-            // Damos un empuje constante hacia el centro equivalente a un 40% del radio
+            // Empuje constante hacia el centro equivalente a un 40% del radio
             randomDirection += centerDir * (patrolRadius * 0.4f);
         }
         
@@ -448,7 +448,7 @@ public class SoldierBrain : MonoBehaviour
         }
         else
         {
-            // Si por algún motivo falla, volvemos a intentarlo en el próximo frame
+            // Si por algún motivo falla, se reintenta en el próximo frame
             isWaiting = true;
             waitTimer = waitTimeAtDestination; 
         }
@@ -472,13 +472,13 @@ public class SoldierBrain : MonoBehaviour
                 
                 Vector3 leaderRight = Vector3.Cross(Vector3.up, leaderForward);
 
-                // Aplicar el offset matemáticamente basándonos en hacia dónde mira el líder
-                Vector3 targetPos = squadManager.leader.position 
-                                    + (leaderRight * formationOffset.x) 
+                // Aplicar el offset matemáticamente en base a hacia dónde mira el líder
+                Vector3 targetPos = squadManager.leader.position
+                                    + (leaderRight * formationOffset.x)
                                     + (leaderForward * formationOffset.z);
-                
-                // IMPORTANTÍSIMO: Solo actualizamos el destino si se ha alejado lo suficiente. 
-                // Si llamamos a SetDestination() cada frame, el NavMeshAgent se buguea calculando rutas y se queda quieto.
+
+                // IMPORTANTE: el destino solo se actualiza si se ha alejado lo suficiente.
+                // Llamar a SetDestination() cada frame haría que el NavMeshAgent se buguee calculando rutas y se quede quieto.
                 Vector3 currentDest = agent.destination;
                 currentDest.y = 0;
                 Vector3 targetDest = targetPos;
@@ -500,13 +500,13 @@ public class SoldierBrain : MonoBehaviour
 
         float distance = Vector3.Distance(transform.position, currentTarget.position);
         
-        // Solo disparamos si tenemos línea de visión (no está escondido tras el tiempo de memoria)
+        // Solo dispara si hay línea de visión (no está escondido tras el tiempo de memoria)
         bool hasLineOfSight = (targetLostTimer == 0f);
 
-        // Si estamos a distancia de tiro, nos comportamos tácticamente (no corremos a lo loco hacia él)
+        // A distancia de tiro, el comportamiento es táctico (no corre a lo loco hacia él)
         if (distance <= stopDistance)
         {
-            // Verificamos si estamos en movimiento
+            // Comprueba si está en movimiento
             bool isRepositioning = false;
             if (agent != null && agent.isOnNavMesh)
             {
@@ -528,13 +528,13 @@ public class SoldierBrain : MonoBehaviour
                 }
             }
 
-            // Sistema de movimiento en combate (para buscar ángulo si no le vemos o no ser blanco fácil)
+            // Sistema de movimiento en combate (para buscar ángulo si no hay visión, o no ser blanco fácil)
             repositionTimer -= Time.deltaTime;
-            
+
             bool tooClose = distance < 15f;
             bool needsToMove = (!hasLineOfSight || tooClose) && !isRepositioning;
 
-            // Forzar reposicionamiento inmediato si no tenemos visión, estamos muy cerca o toca moverse por tiempo
+            // Forzar reposicionamiento inmediato si no hay visión, está muy cerca o toca moverse por tiempo
             if (repositionTimer <= 0f || needsToMove)
             {
                 Vector3 repoPos = transform.position;
@@ -543,7 +543,7 @@ public class SoldierBrain : MonoBehaviour
                     // El enemigo está demasiado cerca, intentar retroceder
                     Vector3 dirAway = (transform.position - currentTarget.position).normalized;
                     repoPos += dirAway * 6f + new Vector3(Random.Range(-2f, 2f), 0, Random.Range(-2f, 2f));
-                    repositionTimer = Random.Range(1.5f, 3f); // Si estamos muy cerca, evaluamos la posición más a menudo
+                    repositionTimer = Random.Range(1.5f, 3f); // Muy cerca: la posición se evalúa más a menudo
                 }
                 else
                 {
@@ -559,7 +559,7 @@ public class SoldierBrain : MonoBehaviour
                     {
                         agent.SetDestination(hit.position);
                         agent.isStopped = false;
-                        isRepositioning = true; // Acabamos de darle una orden de moverse
+                        isRepositioning = true; // Orden de moverse recién emitida
                     }
                 }
             }
@@ -567,12 +567,12 @@ public class SoldierBrain : MonoBehaviour
             if (!isRepositioning)
             {
                 if (agent != null && agent.isOnNavMesh) agent.isStopped = true;
-                
+
                 if (hasLineOfSight)
                 {
                     controller.SetAnimation("Shoot");
-                    
-                    // Solo disparamos si estamos quietos
+
+                    // Solo dispara si está quieto
                     if (Time.time >= nextFireTime)
                     {
                         if (HasClearShot(currentTarget))
@@ -583,18 +583,17 @@ public class SoldierBrain : MonoBehaviour
                         }
                         else
                         {
-                            // Un aliado nos bloquea o hay una pared, forzar reposicionamiento inmediato
-                            repositionTimer = 0f; 
-                            nextFireTime = Time.time + (fireRate / 2f); // Retraso pequeño antes de volver a intentarlo
+                            // Un aliado bloquea la línea de tiro o hay una pared, forzar reposicionamiento inmediato
+                            repositionTimer = 0f;
+                            nextFireTime = Time.time + (fireRate / 2f); // Retraso pequeño antes de reintentar
                         }
                     }
                 }
                 else
                 {
-                    // Estamos a buena distancia pero no le vemos (escondido tras un muro o aliado). 
-                    // Apuntamos y esperamos a que el timer nos haga movernos.
-                    controller.SetAnimation("Walk"); // O Idle de combate
-                    if (agent != null) agent.speed = walkSpeed;
+                    // A buena distancia pero sin visión (escondido tras un muro o aliado).
+                    // Se queda quieto esperando a que el timer fuerce el movimiento.
+                    controller.SetAnimation("Idle");
                 }
             }
             else
@@ -614,24 +613,24 @@ public class SoldierBrain : MonoBehaviour
                 if (agent != null) agent.speed = runSpeed;
                 
                 Vector3 targetPos = currentTarget.position;
-                
-                // Despliegue táctico al avanzar si somos seguidores y el líder vive
+
+                // Despliegue táctico al avanzar si es un seguidor y el líder vive
                 if (!isLeader && squadManager != null && squadManager.leader != null)
                 {
                     // Vector desde el líder hacia el enemigo
                     Vector3 leaderToEnemy = (currentTarget.position - squadManager.leader.position).normalized;
                     leaderToEnemy.y = 0;
                     if (leaderToEnemy.sqrMagnitude < 0.01f) leaderToEnemy = Vector3.forward;
-                    
+
                     Vector3 rightEnemy = Vector3.Cross(Vector3.up, leaderToEnemy);
-                    
-                    // Calculamos una posición avanzando hacia el enemigo pero respetando nuestro offset de formación desplegada
-                    targetPos = currentTarget.position 
-                                - (leaderToEnemy * stopDistance * 0.8f) // Nos acercamos manteniendo la línea un poco por detrás del rango de disparo
-                                + (rightEnemy * formationOffset.x) 
+
+                    // Posición avanzando hacia el enemigo pero respetando el offset de formación desplegada
+                    targetPos = currentTarget.position
+                                - (leaderToEnemy * stopDistance * 0.8f) // Se mantiene la línea un poco por detrás del rango de disparo
+                                + (rightEnemy * formationOffset.x)
                                 + (leaderToEnemy * formationOffset.z);
-                                
-                    // Asegurarnos de que el punto cae en el NavMesh
+
+                    // El punto debe caer en el NavMesh
                     if (NavMesh.SamplePosition(targetPos, out NavMeshHit hit, 4f, NavMesh.AllAreas))
                     {
                         targetPos = hit.position;
@@ -650,29 +649,23 @@ public class SoldierBrain : MonoBehaviour
     private bool HasClearShot(Transform target)
     {
         if (controller.shootPoint == null) return true;
-        
+
         Vector3 direction = (target.position - controller.shootPoint.position).normalized;
         float dist = Vector3.Distance(controller.shootPoint.position, target.position);
-        
-        // Raycast para ver si hay un aliado en medio o una pared (usando detectableLayers)
-        if (Physics.Raycast(controller.shootPoint.position, direction, out RaycastHit hit, dist, sensor != null ? sensor.detectableLayers : (LayerMask)~0, QueryTriggerInteraction.Ignore))
+
+        // Recorre todos los impactos del rayo (no solo el primero), igual que SoldierSensor.IsLineClear,
+        // para que el primer impacto real (ignorando al propio tirador) determine si hay tiro limpio.
+        // Antes solo se comprobaban aliados en medio; una pared entre el shootPoint y el objetivo
+        // dejaba pasar el disparo igualmente, y el soldado acababa disparando contra la pared.
+        RaycastHit[] hits = Physics.RaycastAll(controller.shootPoint.position, direction, dist + 0.5f, sensor != null ? sensor.detectableLayers : (LayerMask)~0, QueryTriggerInteraction.Ignore);
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        foreach (RaycastHit hit in hits)
         {
-            FactionIdentity hitFaction = hit.collider.GetComponentInParent<FactionIdentity>();
-            FactionIdentity myFaction = GetComponent<FactionIdentity>();
-            
-            // Si golpeamos algo que tiene facción y NO es nuestro enemigo (es un aliado)
-            if (hitFaction != null && myFaction != null && !myFaction.IsEnemy(hitFaction.myFaction))
-            {
-                // Verificamos que no seamos nosotros mismos por si el shootPoint detecta nuestro propio cuerpo
-                if (hit.transform.root != transform.root)
-                {
-                    return false; // Aliado en la línea de fuego!
-                }
-            }
-            
-            // Podrías añadir que retorne false si golpea una pared en vez del objetivo, 
-            // pero el sensor ya suele gestionar la visibilidad. Por si acaso, lo dejamos simple.
+            if (hit.transform.root == transform.root) continue; // Ignora al propio tirador
+            return hit.transform.root == target.root; // El primer impacto ajeno debe ser el objetivo
         }
+
         return true;
     }
 
@@ -752,7 +745,7 @@ public class SoldierBrain : MonoBehaviour
             squadManager.RemoveMember(this);
         }
         
-        // En lugar de destruir, desactivamos el cadáver para no perder el script y el replay manager guarde el estado
+        // En lugar de destruir, se desactiva el cadáver para no perder el script y que el replay manager guarde el estado
         StartCoroutine(DeactivateAfterDelay(10f));
     }
 

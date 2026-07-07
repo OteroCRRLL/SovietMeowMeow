@@ -26,8 +26,7 @@ public class RadarSystem : MonoBehaviour
 
     private void Start()
     {
-        // El radar se instancia en la mano del Player (o deberíamos buscar al Player localmente)
-        // Buscamos el Player en la raíz para tener su facción, aunque usualmente es FactionType.Player
+        // El radar se instancia en la mano del Player; se busca el Player en la raíz para obtener su facción, aunque usualmente es FactionType.Player
         PlayerController player = GetComponentInParent<PlayerController>();
         if (player != null)
         {
@@ -69,7 +68,6 @@ public class RadarSystem : MonoBehaviour
             blip.target = null;
         }
 
-        // Si no tenemos al jugador definido, no hacemos nada
         if (playerFaction == null) return;
         
         Transform playerTransform = playerFaction.transform;
@@ -126,7 +124,7 @@ public class RadarSystem : MonoBehaviour
         newBlipObj.SetActive(false);
         RadarBlip blip = newBlipObj.GetComponent<RadarBlip>();
         
-        // Si no tiene el script, se lo añadimos
+        // Si no tiene el script, se añade
         if (blip == null)
         {
             blip = newBlipObj.AddComponent<RadarBlip>();
@@ -167,7 +165,7 @@ public class RadarSystem : MonoBehaviour
         if (radarUIHalfWidth == 0) radarUIHalfWidth = radarCanvasRect.sizeDelta.x / 2f;
         if (radarUIHalfHeight == 0) radarUIHalfHeight = radarCanvasRect.sizeDelta.y / 2f;
         
-        // Si por algún motivo el canvas no tiene tamaño, usamos 50 por defecto (mitad de 100)
+        // Si por algún motivo el canvas no tiene tamaño, se usa 50 por defecto (mitad de 100)
         if (radarUIHalfWidth <= 0) radarUIHalfWidth = 50f;
         if (radarUIHalfHeight <= 0) radarUIHalfHeight = 50f;
         

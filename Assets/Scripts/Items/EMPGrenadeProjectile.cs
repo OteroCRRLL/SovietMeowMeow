@@ -34,14 +34,12 @@ public class EMPGrenadeProjectile : MonoBehaviour
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, explosionRadius);
         foreach (Collider hit in hitColliders)
         {
-            // Intentamos paralizar drones
             DroneBrain drone = hit.GetComponentInParent<DroneBrain>();
             if (drone != null)
             {
                 drone.Paralyze(paralyzeDuration);
             }
 
-            // Intentamos paralizar soldados
             SoldierBrain soldier = hit.GetComponentInParent<SoldierBrain>();
             if (soldier != null)
             {
@@ -49,7 +47,6 @@ public class EMPGrenadeProjectile : MonoBehaviour
             }
         }
 
-        // Podrías añadir un sonido de explosión aquí antes de destruir
         Destroy(gameObject);
     }
 
