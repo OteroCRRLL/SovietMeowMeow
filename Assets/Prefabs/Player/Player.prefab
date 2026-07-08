@@ -1436,6 +1436,7 @@ MonoBehaviour:
   - Enemy
   - Corpse
   combatBonusMultiplier: 1
+  proximityBonusMultiplier: 1
   viewsText: {fileID: 0}
 --- !u!1 &4057272708553618938
 GameObject:
@@ -1857,7 +1858,7 @@ Transform:
   m_GameObject: {fileID: 5273657442699793518}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.376, y: 0.274, z: 0.511}
+  m_LocalPosition: {x: -0.376, y: 0.163, z: 0.699}
   m_LocalScale: {x: 0.70301, y: 0.70301, z: 0.70301}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2867,6 +2868,8 @@ MonoBehaviour:
   normalFOV: 60
   adrenalineFOV: 80
   fovTransitionSpeed: 5
+  animator: {fileID: 2962284016550146537}
+  isWalkingParameter: IsWalking
   footstepsAudioSource: {fileID: -7810037870776902566}
   snowFootstepsClip: {fileID: 8300000, guid: bd1b994e40cfe2b498c0ab71d82b79cd, type: 3}
   catAudioSource: {fileID: 5427418412391713545}
@@ -3607,8 +3610,40 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5482008832527441906, guid: 090488d2d55d6f14bad9c5528d8ec4ee,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2962284016550146537}
   m_SourcePrefab: {fileID: 100100000, guid: 090488d2d55d6f14bad9c5528d8ec4ee, type: 3}
+--- !u!1 &841283681077677500 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5482008832527441906, guid: 090488d2d55d6f14bad9c5528d8ec4ee,
+    type: 3}
+  m_PrefabInstance: {fileID: 5168116898884080206}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &2962284016550146537
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 841283681077677500}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: c3fffa7b83791e94d9f798303f5eb549, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!4 &1589267357116742780 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5888140737022586418, guid: 090488d2d55d6f14bad9c5528d8ec4ee,

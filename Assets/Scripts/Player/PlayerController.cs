@@ -53,6 +53,13 @@ public class PlayerController : MonoBehaviour
     public float adrenalineFOV = 80f;
     public float fovTransitionSpeed = 5f;
 
+    [Header("Animation")]
+    [Tooltip("The Animator that plays the walk animation (can be on a child model)")]
+    public Animator animator;
+    [Tooltip("Name of the Animator bool parameter that toggles the walk animation")]
+    public string isWalkingParameter = "IsWalking";
+    private int isWalkingHash;
+
     [Header("Audio")]
     public AudioSource footstepsAudioSource;
     public AudioClip snowFootstepsClip;
@@ -103,6 +110,7 @@ public class PlayerController : MonoBehaviour
         SetUpCharacterController();
         SetUpRigidbody();
         SetUpAudio();
+        isWalkingHash = Animator.StringToHash(isWalkingParameter);
     }
 
     private void SetUpAudio()
@@ -156,6 +164,21 @@ public class PlayerController : MonoBehaviour
         ProcessHorizontalRotation();
         ProcessAdrenalineEffects();
         ProcessAudio();
+        ProcessWalkAnimation();
+    }
+
+    /// <summary>
+    /// Plays the walk animation in loop while the player is moving on the ground.
+    /// Jumping/falling is excluded so the walk clip doesn't play mid-air.
+    /// </summary>
+    private void ProcessWalkAnimation()
+    {
+        if (animator == null || controller == null) return;
+
+        bool isMoving = moveInput.ReadValue<Vector2>().sqrMagnitude > 0.01f;
+        bool isWalking = isMoving && controller.isGrounded;
+
+        animator.SetBool(isWalkingHash, isWalking);
     }
 
     private void ProcessAudio()

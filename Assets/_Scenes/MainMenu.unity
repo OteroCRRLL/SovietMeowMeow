@@ -3803,9 +3803,12 @@ MonoBehaviour:
     Stop Recording:
     T
 
+    Use object: C
+
     Switch Equipped Item: 1, 2, 3 or Mouse Wheel
 
-    Pause Menu: Esc'
+    Pause
+    Menu: Esc'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 4f4d8e2efd0de054896d243105a4997d, type: 2}
   m_sharedMaterial: {fileID: 3357918234310102105, guid: 4f4d8e2efd0de054896d243105a4997d,
