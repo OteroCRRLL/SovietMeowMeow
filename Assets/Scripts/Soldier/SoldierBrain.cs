@@ -650,13 +650,16 @@ public class SoldierBrain : MonoBehaviour
     {
         if (controller.shootPoint == null) return true;
 
-        Vector3 direction = (target.position - controller.shootPoint.position).normalized;
-        float dist = Vector3.Distance(controller.shootPoint.position, target.position);
+        // Mismo punto de puntería que usa SoldierController.Fire() (centro del collider, no los pies/pivote),
+        // para que esta comprobación y el disparo real apunten exactamente al mismo sitio.
+        Collider targetCollider = target.GetComponentInChildren<Collider>();
+        Vector3 targetPosition = targetCollider != null ? targetCollider.bounds.center : target.position + Vector3.up * 1f;
+
+        Vector3 direction = (targetPosition - controller.shootPoint.position).normalized;
+        float dist = Vector3.Distance(controller.shootPoint.position, targetPosition);
 
         // Recorre todos los impactos del rayo (no solo el primero), igual que SoldierSensor.IsLineClear,
         // para que el primer impacto real (ignorando al propio tirador) determine si hay tiro limpio.
-        // Antes solo se comprobaban aliados en medio; una pared entre el shootPoint y el objetivo
-        // dejaba pasar el disparo igualmente, y el soldado acababa disparando contra la pared.
         RaycastHit[] hits = Physics.RaycastAll(controller.shootPoint.position, direction, dist + 0.5f, sensor != null ? sensor.detectableLayers : (LayerMask)~0, QueryTriggerInteraction.Ignore);
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
@@ -746,7 +749,7 @@ public class SoldierBrain : MonoBehaviour
         }
         
         // En lugar de destruir, se desactiva el cadáver para no perder el script y que el replay manager guarde el estado
-        StartCoroutine(DeactivateAfterDelay(10f));
+        StartCoroutine(DeactivateAfterDelay(20f));
     }
 
     private System.Collections.IEnumerator DeactivateAfterDelay(float delay)

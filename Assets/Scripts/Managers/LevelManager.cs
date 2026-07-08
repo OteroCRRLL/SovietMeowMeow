@@ -90,14 +90,16 @@ public class LevelManager : MonoBehaviour
             }
 
             int baseScore = 0;
-            int bonusScore = 0;
+            int combatBonusScore = 0;
+            int proximityBonusScore = 0;
             int viewsObtained = 0;
             float moneyEarned = 0f;
 
             if (CameraScoring.instance != null)
             {
                 baseScore = CameraScoring.instance.GetBaseScore();
-                bonusScore = CameraScoring.instance.GetCombatBonusScore();
+                combatBonusScore = CameraScoring.instance.GetCombatBonusScore();
+                proximityBonusScore = CameraScoring.instance.GetProximityBonusScore();
                 viewsObtained = CameraScoring.instance.GetCurrentScore();
                 moneyEarned = viewsObtained * 0.5f;
                 GameManager.instance.currentMoney += moneyEarned;
@@ -116,7 +118,7 @@ public class LevelManager : MonoBehaviour
 
             if (ExtractionSummaryScreenManager.instance != null)
             {
-                ExtractionSummaryScreenManager.instance.Show(baseScore, bonusScore, viewsObtained, moneyEarned, goToHub);
+                ExtractionSummaryScreenManager.instance.Show(baseScore, combatBonusScore, proximityBonusScore, viewsObtained, moneyEarned, goToHub);
             }
             else
             {

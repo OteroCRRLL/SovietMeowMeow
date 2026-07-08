@@ -25,9 +25,9 @@ public class ExtractionSummaryScreenManager : MonoBehaviour
     public float fadeOutDuration = 1f;
 
     [Header("Contenido")]
-    [Tooltip("Usa {base}, {bonus}, {total} y {money} como placeholders del desglose.")]
+    [Tooltip("Usa {base}, {combat}, {proximity}, {total} y {money} como placeholders del desglose.")]
     [TextArea(8, 20)]
-    public string messageTemplate = "FOOTAGE LOGGED\n\nBase footage: {base} views\nCombat bonus: {bonus} views\n\nTotal: {total} views\n\nPaid out: ${money}";
+    public string messageTemplate = "FOOTAGE LOGGED\n\nBase footage: {base} views\nCombat bonus: {combat} views\nProximity bonus: {proximity} views\n\nTotal: {total} views\n\nPaid out: ${money}";
     public Sprite background;
 
     private void Awake()
@@ -52,7 +52,7 @@ public class ExtractionSummaryScreenManager : MonoBehaviour
         }
     }
 
-    public void Show(int baseScore, int bonusScore, int totalScore, float moneyEarned, Action onComplete = null)
+    public void Show(int baseScore, int combatBonusScore, int proximityBonusScore, int totalScore, float moneyEarned, Action onComplete = null)
     {
         if (canvasGroup == null)
         {
@@ -62,7 +62,8 @@ public class ExtractionSummaryScreenManager : MonoBehaviour
 
         string message = messageTemplate
             .Replace("{base}", baseScore.ToString())
-            .Replace("{bonus}", bonusScore.ToString())
+            .Replace("{combat}", combatBonusScore.ToString())
+            .Replace("{proximity}", proximityBonusScore.ToString())
             .Replace("{total}", totalScore.ToString())
             .Replace("{money}", moneyEarned.ToString("0"));
 

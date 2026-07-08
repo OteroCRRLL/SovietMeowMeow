@@ -113,7 +113,9 @@ MonoBehaviour:
 
     Base footage: {base} views
 
-    Combat bonus: {bonus} views
+    Combat bonus: {combat} views
+
+    Proximity bonus: {proximity} views
 
 
     Total: {total} views
