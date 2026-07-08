@@ -12,9 +12,21 @@ public class InventorySlotUI : MonoBehaviour
     private int slotIndex;
     private InventoryAppManager manager;
     private bool isEmpty = true;
+    private bool referencesReady = false;
 
     private void Awake()
     {
+        EnsureReferences();
+    }
+
+    // Se llama también desde Setup()/SetupEmpty(), porque la primera vez que se abre el panel
+    // el OnEnable() del InventoryAppManager puede disparar antes que el Awake() de este hijo,
+    // dejando iconImage/emptyTextObj/slotButton sin asignar en esa primera llamada.
+    private void EnsureReferences()
+    {
+        if (referencesReady) return;
+        referencesReady = true;
+
         slotButton = GetComponent<Button>();
 
         Transform iconTransform = transform.Find("Icono");
@@ -40,6 +52,7 @@ public class InventorySlotUI : MonoBehaviour
 
     public void SetupEmpty(int index, InventoryAppManager appManager)
     {
+        EnsureReferences();
         slotIndex = index;
         manager = appManager;
         isEmpty = true;
@@ -56,6 +69,7 @@ public class InventorySlotUI : MonoBehaviour
 
     public void Setup(ItemData item, int index, InventoryAppManager appManager)
     {
+        EnsureReferences();
         slotIndex = index;
         manager = appManager;
         isEmpty = false;

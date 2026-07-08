@@ -15,12 +15,17 @@ public class CameraScoring : MonoBehaviour
     [Tooltip("Multiplicador extra aplicado a la puntuación de un objetivo mientras está activamente en combate (disparando, apuntando, en kamikaze...). 1 = +100% de bonus.")]
     public float combatBonusMultiplier = 1f;
 
+    [Header("Bonus por Proximidad")]
+    [Tooltip("Multiplicador extra en la distancia mínima (pegado al objetivo). 1 = +100% de bonus. El bonus baja de forma lineal hasta 0 en rayDistance.")]
+    public float proximityBonusMultiplier = 1f;
+
     [Header("UI")]
     public TextMeshProUGUI viewsText;
 
     private int currentScore = 0;
     private int currentBaseScore = 0;
     private int currentCombatBonusScore = 0;
+    private int currentProximityBonusScore = 0;
     private Dictionary<GameObject, float> recordedObjectsTime = new Dictionary<GameObject, float>();
     private Camera mainCamera;
 
@@ -153,6 +158,7 @@ public class CameraScoring : MonoBehaviour
     {
         int newBaseScore = 0;
         int newCombatBonusScore = 0;
+        int newProximityBonusScore = 0;
 
         foreach (var kvp in recordedObjectsTime)
         {
@@ -172,15 +178,25 @@ public class CameraScoring : MonoBehaviour
             {
                 newCombatBonusScore += (int)(baseValue * combatBonusMultiplier);
             }
+
+            // Bonus por grabar de cerca en vez de a salvo desde lejos: máximo pegado al objetivo,
+            // baja de forma lineal hasta 0 en rayDistance.
+            float distance = Vector3.Distance(transform.position, obj.transform.position);
+            float proximityFactor = Mathf.Clamp01(1f - (distance / rayDistance));
+            if (proximityFactor > 0f)
+            {
+                newProximityBonusScore += (int)(baseValue * proximityBonusMultiplier * proximityFactor);
+            }
         }
 
-        int newScore = newBaseScore + newCombatBonusScore;
+        int newScore = newBaseScore + newCombatBonusScore + newProximityBonusScore;
 
         if (newScore != currentScore)
         {
             currentScore = newScore;
             currentBaseScore = newBaseScore;
             currentCombatBonusScore = newCombatBonusScore;
+            currentProximityBonusScore = newProximityBonusScore;
             UpdateUI();
         }
     }
@@ -232,6 +248,7 @@ public class CameraScoring : MonoBehaviour
         currentScore = 0;
         currentBaseScore = 0;
         currentCombatBonusScore = 0;
+        currentProximityBonusScore = 0;
         recordedObjectsTime.Clear();
         UpdateUI();
         Debug.Log("Puntuacin reiniciada para un nuevo despliegue.");
@@ -250,5 +267,10 @@ public class CameraScoring : MonoBehaviour
     public int GetCombatBonusScore()
     {
         return currentCombatBonusScore;
+    }
+
+    public int GetProximityBonusScore()
+    {
+        return currentProximityBonusScore;
     }
 }

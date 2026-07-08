@@ -26,7 +26,7 @@ public class GameManager : MonoBehaviour
     [Header("Progreso y Economía")]
     public int maxDaysPerWeek = 3;
     public float currentMoney = 0f;
-    public float requiredMoneyQuota = 10000f;
+    public float requiredMoneyQuota = 100000f;
 
     [Header("Inventario")]
     public ItemDatabase itemDatabase;
@@ -184,7 +184,7 @@ public class GameManager : MonoBehaviour
         currentDay = 1;
         hasDeployedToday = false;
         currentMoney = 0f;
-        requiredMoneyQuota = 10000f;
+        requiredMoneyQuota = 100000f;
         
         hubInventory.Clear();
         equippedItems = new string[3] { "", "", "" };

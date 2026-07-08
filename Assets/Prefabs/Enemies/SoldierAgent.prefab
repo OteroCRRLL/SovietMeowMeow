@@ -92,7 +92,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  - {fileID: 3357918234310102105, guid: 4f4d8e2efd0de054896d243105a4997d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -137,7 +137,8 @@ MonoBehaviour:
   m_text: Sample text
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 4f4d8e2efd0de054896d243105a4997d, type: 2}
-  m_sharedMaterial: {fileID: 3357918234310102105, guid: 4f4d8e2efd0de054896d243105a4997d, type: 2}
+  m_sharedMaterial: {fileID: 3357918234310102105, guid: 4f4d8e2efd0de054896d243105a4997d,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -247,6 +248,7 @@ GameObject:
   - component: {fileID: 8576156894408073822}
   - component: {fileID: 5549803129610781525}
   - component: {fileID: -4583811403312600761}
+  - component: {fileID: 5655243448584027652}
   m_Layer: 7
   m_Name: SoldierAgent
   m_TagString: Enemy
@@ -326,6 +328,7 @@ MonoBehaviour:
     m_Bits: 38911
   angleDifference: 120
   scanFrequency: 5
+  closeRangeAlwaysNoticeDistance: 4
   sweepSpeed: 60
   maxSweepAngle: 45
 --- !u!114 &4598768343551064781
@@ -623,6 +626,29 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!136 &5655243448584027652
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5497275917026992227}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.96746254
+  m_Height: 4.8881736
+  m_Direction: 1
+  m_Center: {x: 0, y: 2.360675, z: 0.020952225}
 --- !u!1001 &6669813100828039604
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -694,41 +720,8 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 100060, guid: fcb334eb247ae3e488abb081c847cf09,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8138018613150415413}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fcb334eb247ae3e488abb081c847cf09, type: 3}
---- !u!1 &6669813100828139368 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 100060, guid: fcb334eb247ae3e488abb081c847cf09,
-    type: 3}
-  m_PrefabInstance: {fileID: 6669813100828039604}
-  m_PrefabAsset: {fileID: 0}
---- !u!136 &8138018613150415413
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6669813100828139368}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 2.7628956
-  m_Direction: 1
-  m_Center: {x: 0, y: 1.305758, z: 0}
 --- !u!4 &6669813100828164872 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400060, guid: fcb334eb247ae3e488abb081c847cf09,
