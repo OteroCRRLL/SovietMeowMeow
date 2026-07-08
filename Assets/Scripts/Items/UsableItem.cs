@@ -6,10 +6,7 @@ public abstract class UsableItem : MonoBehaviour
 {
     [Header("Item Config")]
     public InputAction useAction;
-    public float holdTimeRequired = 0.7f;
-    
-    protected float currentHoldTime = 0f;
-    protected bool isHolding = false;
+
     protected bool hasBeenUsed = false;
 
     protected virtual void OnEnable()
@@ -21,8 +18,6 @@ public abstract class UsableItem : MonoBehaviour
     protected virtual void OnDisable()
     {
         useAction.Disable();
-        isHolding = false;
-        currentHoldTime = 0f;
         hasBeenUsed = false;
     }
 
@@ -33,38 +28,15 @@ public abstract class UsableItem : MonoBehaviour
 
         if (hasBeenUsed) return;
 
-        if (useAction.WasPressedThisFrame() || useAction.IsPressed())
+        if (useAction.WasPressedThisFrame())
         {
-            isHolding = true;
-            currentHoldTime += Time.deltaTime;
-
-            if (currentHoldTime >= holdTimeRequired)
-            {
-                currentHoldTime = 0f;
-                isHolding = false;
-                hasBeenUsed = true;
-                UseItem();
-            }
-        }
-        else
-        {
-            if (isHolding)
-            {
-                // Solto el boton antes de tiempo
-                isHolding = false;
-                currentHoldTime = 0f;
-                OnUseCancelled();
-            }
+            hasBeenUsed = true;
+            UseItem();
         }
     }
 
     protected abstract void UseItem();
-    
-    protected virtual void OnUseCancelled() 
-    {
-        // Opcional: Se puede sobrescribir para cancelar sonidos o animaciones
-    }
-    
+
     protected void ConsumeItem()
     {
         PlayerEquipment equipment = FindObjectOfType<PlayerEquipment>();
@@ -78,7 +50,5 @@ public abstract class UsableItem : MonoBehaviour
     protected void ResetUsage()
     {
         hasBeenUsed = false;
-        isHolding = false;
-        currentHoldTime = 0f;
     }
 }

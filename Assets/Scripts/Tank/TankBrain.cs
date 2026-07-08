@@ -18,6 +18,12 @@ public class TankBrain : MonoBehaviour
     public float targetLossGraceTime = 0.5f; //Time to wait before continue patrolling
     public float shootDuration = 0.5f; // Tiempo que el tanque se queda en estado 'Shoot' tras disparar
 
+    [Header("Stuck Detection")]
+    [Tooltip("Cada cuántos segundos se comprueba si el tanque ha avanzado, para detectar que está bloqueado (p. ej. por el cadáver de otro tanque).")]
+    public float stuckCheckInterval = 2f;
+    [Tooltip("Distancia mínima que debe recorrer en ese intervalo para no considerarse atascado.")]
+    public float stuckDistanceThreshold = 1f;
+
     [Header("Audio")]
     public AudioSource tankAudioSource;
     public AudioClip tankClip;
@@ -46,6 +52,8 @@ public class TankBrain : MonoBehaviour
     private float shootTimer = 0f;
     private HealthSystem health;
     private FactionIdentity myFaction;
+    private float stuckCheckTimer = 0f;
+    private Vector3 lastStuckCheckPosition;
 
     // Start is called before the first frame update
     void Start()
@@ -156,7 +164,7 @@ public class TankBrain : MonoBehaviour
         if (!agent.pathPending)
         {
             // Llegó al destino
-            if (agent.remainingDistance < 1.0f) 
+            if (agent.remainingDistance < 1.0f)
             {
                 shouldSetNewDestination = true;
             }
@@ -165,10 +173,30 @@ public class TankBrain : MonoBehaviour
             {
                 shouldSetNewDestination = true;
             }
+            else
+            {
+                // El camino calculado puede ser válido sobre el papel pero estar físicamente bloqueado
+                // (p. ej. por el cadáver de otro tanque, que no forma parte del NavMesh). Si no avanza
+                // durante stuckCheckInterval segundos, se fuerza un nuevo destino para que dé media vuelta.
+                stuckCheckTimer += Time.deltaTime;
+                if (stuckCheckTimer >= stuckCheckInterval)
+                {
+                    float movedDistance = Vector3.Distance(transform.position, lastStuckCheckPosition);
+                    if (movedDistance < stuckDistanceThreshold)
+                    {
+                        shouldSetNewDestination = true;
+                    }
+                    stuckCheckTimer = 0f;
+                    lastStuckCheckPosition = transform.position;
+                }
+            }
         }
 
         if (shouldSetNewDestination)
-        { 
+        {
+            stuckCheckTimer = 0f;
+            lastStuckCheckPosition = transform.position;
+
             if (waypoints != null && waypoints.Length > 0)
             {
                 currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length; //Loop
@@ -350,15 +378,6 @@ public class TankBrain : MonoBehaviour
                 CameraController.instance.ShakeCamera(shakeDuration, shakeIntensity);
             }
         }
-
-        // El tanque se destruye al instante si explota
-        gameObject.SetActive(false);
-    }
-
-    private System.Collections.IEnumerator DeactivateAfterDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        gameObject.SetActive(false);
     }
 
     private void OnDisable()
