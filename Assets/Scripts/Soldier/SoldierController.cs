@@ -195,6 +195,18 @@ public class SoldierController : MonoBehaviour
         }
     }
 
+    // Dispara la muerte por parámetro (Trigger "Die") en vez de por nombre de estado,
+    // para que la transición "Any State -> Death" del Animator la capture sin importar
+    // en qué animación esté el soldado en ese momento.
+    public void TriggerDeath()
+    {
+        if (anim != null)
+        {
+            anim.SetTrigger("Die");
+            currentAnimState = "Death";
+        }
+    }
+
     public void Fire(Transform target)
     {
         if (brain != null && brain.CurrentState == SoldierState.Reloading) return;

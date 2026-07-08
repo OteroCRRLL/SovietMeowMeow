@@ -456,20 +456,19 @@ public class SoldierBrain : MonoBehaviour
 
     private void UpdateFollow()
     {
-        controller.SetAnimation("Walk");
         if (agent != null) agent.speed = walkSpeed;
         if (squadManager != null && squadManager.leader != null)
         {
             if (agent != null && agent.isOnNavMesh)
             {
                 agent.isStopped = false;
-                
+
                 // Calcular la dirección hacia adelante y a la derecha del líder de forma plana
                 Vector3 leaderForward = squadManager.leader.forward;
                 leaderForward.y = 0;
-                if (leaderForward.sqrMagnitude < 0.01f) leaderForward = Vector3.forward; 
+                if (leaderForward.sqrMagnitude < 0.01f) leaderForward = Vector3.forward;
                 leaderForward.Normalize();
-                
+
                 Vector3 leaderRight = Vector3.Cross(Vector3.up, leaderForward);
 
                 // Aplicar el offset matemáticamente en base a hacia dónde mira el líder
@@ -490,6 +489,11 @@ public class SoldierBrain : MonoBehaviour
                 }
             }
         }
+
+        // Solo se anima como "Walk" mientras realmente se desplaza; si ya alcanzó su
+        // posición en la formación y está esperando al líder, se queda en Idle.
+        bool isMoving = agent != null && agent.isOnNavMesh && agent.velocity.sqrMagnitude > 0.05f;
+        controller.SetAnimation(isMoving ? "Walk" : "Idle");
     }
 
     private void UpdateCombat()
@@ -736,7 +740,7 @@ public class SoldierBrain : MonoBehaviour
             agent.enabled = false; // Desactivar agente para que no mueva al cadáver
         }
         
-        controller.SetAnimation("Death");
+        controller.TriggerDeath();
         
         if (sensor != null) sensor.enabled = false;
         
